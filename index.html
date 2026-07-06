@@ -145,10 +145,10 @@
         <main class="flex-grow flex flex-col justify-center overflow-hidden">
 
             <!-- 1. BIENVENIDA ESPECTACULAR -->
-            <section id="screen-welcome" class="flex flex-col justify-center items-center h-full gap-6 px-4 relative overflow-hidden">
+            <section id="screen-welcome" class="flex flex-col justify-center items-center h-full gap-2 md:gap-6 px-3 md:px-4 py-6 md:py-8 relative overflow-hidden">
                 <!-- Ruleta SVG de fondo difuminada y giratoria -->
                 <div class="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none">
-                    <svg class="w-96 h-96 animate-spin" style="animation-duration: 15s;" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+                    <svg class="w-64 md:w-96 h-64 md:h-96 animate-spin" style="animation-duration: 15s;" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
                         <circle cx="200" cy="200" r="180" fill="none" stroke="#fbbf24" stroke-width="2"/>
                         <circle cx="200" cy="200" r="170" fill="none" stroke="#f59e0b" stroke-width="1" opacity="0.5"/>
                         <!-- Gajos de la ruleta -->
@@ -166,32 +166,32 @@
                     </svg>
                 </div>
 
-                <div class="text-center space-y-8 relative z-10">
-                    <div class="space-y-4">
-                        <h1 class="text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-pink-300 to-emerald-300 title-font leading-tight">
+                <div class="text-center space-y-3 md:space-y-4 relative z-10 flex-1 flex flex-col justify-center">
+                    <div class="space-y-2 md:space-y-3">
+                        <h1 class="text-5xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-pink-300 to-emerald-300 title-font leading-tight">
                             ¡FELIZ<br>CUMPLEAÑOS<br>MAMÁ!
                         </h1>
-                        <p class="text-6xl animate-bounce">🎉</p>
+                        <p class="text-4xl md:text-6xl animate-bounce">🎉</p>
                     </div>
 
-                    <div class="space-y-2">
-                        <div class="inline-block bg-gradient-to-r from-yellow-500 to-amber-500 text-slate-950 font-black text-xs px-4 py-1.5 rounded-full uppercase tracking-wider shadow-lg">Concurso Especial</div>
-                        <h2 class="text-4xl font-black text-white title-font">La Ruleta de la Suerte</h2>
+                    <div class="space-y-2 md:space-y-2">
+                        <div class="inline-block bg-gradient-to-r from-yellow-500 to-amber-500 text-slate-950 font-black text-[10px] md:text-xs px-3 md:px-4 py-1 md:py-1.5 rounded-full uppercase tracking-wider shadow-lg">Concurso Especial</div>
+                        <h2 class="text-lg md:text-4xl font-black text-white title-font">La Ruleta de la Suerte</h2>
                     </div>
                 </div>
 
-                <div class="bg-gradient-to-b from-emerald-950/60 to-emerald-900/40 border-2 border-emerald-500/60 rounded-2xl p-6 max-w-sm w-full shadow-2xl space-y-4">
-                    <p class="text-center text-white font-bold text-lg">Tu regalo especial te espera...</p>
-                    <p class="text-center text-slate-300 text-sm leading-relaxed">Para descubrir qué sorpresa hemos preparado, deberás ganarla en este concurso de televisión.</p>
-                    <p class="text-center text-amber-300 font-black text-sm">¿Estás lista para el reto? ⭐</p>
+                <div class="bg-gradient-to-b from-emerald-950/60 to-emerald-900/40 border-2 border-emerald-500/60 rounded-lg md:rounded-2xl p-3 md:p-6 max-w-sm w-full shadow-2xl space-y-2 md:space-y-4">
+                    <p class="text-center text-white font-bold text-xs md:text-lg">Tu regalo especial te espera...</p>
+                    <p class="text-center text-slate-300 text-[9px] md:text-sm leading-relaxed">Para descubrir qué sorpresa hemos preparado, deberás ganarla en este concurso de televisión.</p>
+                    <p class="text-center text-amber-300 font-black text-[9px] md:text-sm">¿Estás lista para el reto? ⭐</p>
                 </div>
 
-                <!-- Botón Editor (pequeño, abajo) -->
-                <button id="btn-editor-mode" class="text-[9px] text-slate-500 hover:text-slate-400 font-bold uppercase tracking-wider px-2 py-1 rounded hover:bg-slate-900/50">
+                <!-- Botón Editor (pequeño) -->
+                <button id="btn-editor-mode" class="text-[7px] md:text-[9px] text-slate-500 hover:text-slate-400 font-bold uppercase tracking-wider px-2 py-0.5 rounded hover:bg-slate-900/50">
                     ⚙️ Modo Editor
                 </button>
 
-                <button id="btn-start-game" class="w-full max-w-xs bg-gradient-to-r from-yellow-500 to-amber-500 text-slate-950 font-black text-lg py-4 px-6 rounded-xl shadow-lg transition-transform active:scale-95 duration-150">
+                <button id="btn-start-game" class="w-full max-w-xs bg-gradient-to-r from-yellow-500 to-amber-500 text-slate-950 font-black text-sm md:text-lg py-3 md:py-4 px-6 rounded-xl shadow-lg transition-transform active:scale-95 duration-150 mb-4">
                     ¡Comenzar Concurso! 🎮
                 </button>
             </section>
@@ -206,7 +206,7 @@
                 </div>
 
                 <!-- Tablero táctil elástico -->
-                <div class="bg-emerald-950/40 border-2 border-emerald-500/60 rounded-2xl p-2.5 shadow-xl flex flex-col gap-1 items-center justify-center min-h-[140px] flex-grow">
+                <div class="bg-emerald-950/40 border-2 border-emerald-500/60 rounded-2xl p-2.5 shadow-xl flex flex-col gap-1 items-center min-h-[140px] md:flex-grow">
                     <div id="board-rows-container" class="w-full flex flex-col gap-1 items-center">
                         <!-- Filas de casillas generadas dinámicamente -->
                     </div>
@@ -281,30 +281,27 @@
             <!-- 4. PANEL FINAL (Gran Final) -->
             <section id="screen-final" class="hidden flex flex-col justify-between h-full gap-2.5">
 
-                <div class="bg-slate-900/80 border border-slate-800 rounded-xl px-3 py-1.5 flex justify-between items-center">
-                    <span class="text-[9px] bg-yellow-500/20 text-yellow-300 border border-yellow-500/20 px-2 py-0.5 rounded uppercase font-black tracking-wider">🏆 Final</span>
-                    <h3 id="final-category" class="text-xs font-black text-white truncate max-w-[240px]">Tu Premio Esperado...</h3>
+                <div class="bg-gradient-to-r from-yellow-500/20 to-amber-500/20 border-2 border-yellow-500/40 rounded-xl px-3 py-2 flex flex-col justify-between items-center gap-2">
+                    <span class="text-[11px] bg-gradient-to-r from-yellow-500 to-amber-500 text-slate-950 px-3 py-1 rounded-full font-black tracking-wider">🏆 PANEL FINAL 🏆</span>
+                    <p class="text-[9px] text-yellow-200 text-center">¡Resuelve este último panel para descubrir tu regalo sorpresa!</p>
+                    <h3 id="final-category" class="text-xs font-black text-white">Categoría Especial</h3>
                 </div>
 
                 <!-- Tablero del Panel Final -->
-                <div class="bg-emerald-950/40 border-2 border-emerald-500/60 rounded-2xl p-2.5 shadow-xl flex flex-col gap-1 items-center justify-center min-h-[140px] flex-grow">
+                <div class="bg-emerald-950/40 border-2 border-emerald-500/60 rounded-2xl p-2.5 shadow-xl flex flex-col gap-1 items-center md:flex-grow">
                     <div id="final-board-container" class="w-full flex flex-col gap-1 items-center">
                         <!-- Casillas del panel final -->
                     </div>
                 </div>
 
-                <!-- Teclado para aplicar ayudas -->
-                <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3 flex flex-col gap-2">
+                <!-- Teclado para elegir letras -->
+                <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3 flex flex-col gap-2 max-h-[200px] overflow-y-auto custom-scroll">
                     <div class="text-[10px] text-slate-400 font-bold uppercase tracking-wider pb-1.5 border-b border-slate-800">
-                        Usa tus Ayudas Compradas
+                        Elige Letra
                     </div>
 
-                    <div id="final-helps-container" class="space-y-2">
-                        <!-- Botones de ayudas generados dinámicamente -->
-                    </div>
-
-                    <div id="final-keyboard-container" class="max-h-[120px] overflow-y-auto custom-scroll pr-1">
-                        <!-- Teclado para elegir letras manuales -->
+                    <div id="final-keyboard-container">
+                        <!-- Teclado para elegir letras -->
                     </div>
                 </div>
 
@@ -315,7 +312,22 @@
 
             </section>
 
-            <!-- 5. PANTALLA DE VICTORIA FINAL -->
+            <!-- 5. PANTALLA DE CELEBRACIÓN FINAL -->
+            <section id="screen-final-celebration" class="hidden flex flex-col justify-center items-center h-full gap-8 px-4">
+                <div class="text-center space-y-6">
+                    <div class="text-8xl md:text-9xl animate-bounce">🎉</div>
+                    <h1 class="text-6xl md:text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-pink-400 via-purple-400 to-cyan-400 title-font leading-tight">
+                        ¡FELICIDADES!
+                    </h1>
+                    <p class="text-2xl text-yellow-300 font-black">🎊 ¡LO LOGRASTE! 🎊</p>
+                </div>
+
+                <button id="btn-see-message" class="w-full max-w-sm bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-400 hover:to-purple-500 text-white font-black text-xl py-5 px-8 rounded-xl shadow-lg transition-transform active:scale-95 duration-150">
+                    💌 Tienes un Mensaje Especial
+                </button>
+            </section>
+
+            <!-- 6. PANTALLA DE VICTORIA FINAL -->
             <section id="screen-victory" class="hidden flex flex-col justify-center items-center h-full gap-6 px-4">
 
                 <div class="text-center space-y-4">
@@ -342,10 +354,36 @@
         </main>
 
         <!-- FOOTER COMPACTO -->
-        <footer class="text-center text-[9px] text-slate-600">
+        <footer class="text-center text-[9px] text-slate-600 mt-6 pt-4 pb-2">
             La Ruleta de la Suerte - Versión Móvil de Entretenimiento
         </footer>
 
+    </div>
+
+    <!-- MODAL: PISTA DE CATEGORÍA -->
+    <div id="modal-category-hint" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+        <div class="bg-gradient-to-br from-amber-600 to-orange-700 rounded-3xl p-8 text-center space-y-4 max-w-sm w-full shadow-2xl border-2 border-amber-400">
+            <p class="text-sm text-amber-100 font-bold uppercase tracking-widest">💡 PISTA</p>
+            <h2 id="hint-category" class="text-3xl md:text-4xl font-black text-white title-font">Categoría</h2>
+            <button id="btn-close-hint" class="w-full bg-white text-amber-900 font-black text-lg py-3 rounded-xl hover:bg-amber-50 transition-colors">
+                ¡Entendido! →
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL: ANUNCIO PANEL FINAL -->
+    <div id="modal-final-announcement" class="hidden fixed inset-0 bg-gradient-to-b from-purple-900/95 to-slate-950/95 backdrop-blur-md flex items-center justify-center p-4 z-50 overflow-y-auto">
+        <div class="text-center space-y-6 max-w-sm w-full">
+            <div class="text-6xl md:text-7xl animate-bounce">🏆</div>
+            <h1 class="text-5xl md:text-6xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-pink-300 to-cyan-300 title-font leading-tight">
+                ¡PANEL<br>FINAL!
+            </h1>
+            <p class="text-xl text-yellow-200 font-bold">🎊 Este es tu último reto 🎊</p>
+            <p class="text-slate-300 text-sm">Si lo resuelves, descubrirás tu regalo especial</p>
+            <button id="btn-start-final-panel" class="w-full bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-400 hover:to-amber-400 text-slate-950 font-black text-lg py-4 rounded-xl shadow-lg transition-transform active:scale-95">
+                ¡ACEPTAR EL RETO! ⚔️
+            </button>
+        </div>
     </div>
 
     <!-- ========================================== -->
@@ -529,7 +567,7 @@
     </div>
 
     <!-- Contenedor de confeti -->
-    <div id="confetti-container" class="fixed inset-0 pointer-events-none overflow-hidden"></div>
+    <div id="confetti-container" class="fixed inset-0 pointer-events-none overflow-hidden z-50"></div>
 
     <!-- SCRIPT DE JUEGO MÓVIL-FIRST -->
     <script>
@@ -542,37 +580,28 @@
 
             panels: [
                 {
-                    phrase: "LA RULETA DE LA SUERTE",
-                    category: "NUESTRO CONCURSO DE TELEVISION",
+                    phrase: "MOULIN ROUGE",
+                    category: "Película",
                     completionBonus: 50
                 },
                 {
-                    phrase: "MAS VALE PAJARO EN MANO QUE CIENTO VOLANDO",
-                    category: "REFRANES POPULARES",
+                    phrase: "LA FONTANA DI TREVI",
+                    category: "Pide un deseo",
                     completionBonus: 50
                 },
                 {
-                    phrase: "DON QUIJOTE DE LA MANCHA",
-                    category: "LITERATURA CLASICA",
-                    completionBonus: 50
-                },
-                {
-                    phrase: "EL AGUA HIERVE A CIEN GRADOS",
-                    category: "CIENCIA DIVERTIDA",
-                    completionBonus: 50
-                },
-                {
-                    phrase: "SUPER MARIO BROS",
-                    category: "VIDEOJUEGOS FAMOSOS",
+                    phrase: "EL RIO TAMESIS",
+                    category: "Atraviesa una gran ciudad",
                     completionBonus: 50
                 }
             ],
 
             finalPanel: {
-                phrase: "UN VIAJE A DISNEY",
-                category: "TU GRAN PREMIO FINAL",
-                finalGiftText: "🎉 ¡Felicidades! ¡Has ganado un viaje a Disney! 🎊",
-                initialRevealLetters: ["R", "S", "F", "Y", "O", "U"]
+                phrase: "UNA ESCAPADA EUROPEA JUNTAS",
+                category: "Así da gusto cumplir años",
+                completionBonus: 100,
+                finalGiftText: "🎉 ¡Felicidades! ¡Tu escapada europea juntas te espera! 🎊",
+                initialRevealLetters: ["A", "E", "O", "U"]
             },
 
             wheelSegments: [
@@ -776,6 +805,16 @@
             }, 300);
         });
 
+        // Cerrar modal de categoría
+        document.getElementById('btn-close-hint').addEventListener('click', () => {
+            document.getElementById('modal-category-hint').classList.add('hidden');
+        });
+
+        // Aceptar panel final
+        document.getElementById('btn-start-final-panel').addEventListener('click', () => {
+            actuallyLoadFinalPanel();
+        });
+
         // ============================================
         // MODO EDITOR
         // ============================================
@@ -783,6 +822,10 @@
             const password = prompt("🔐 Contraseña para entrar al modo editor:");
             if (password === "cacadelavaca") {
                 document.getElementById('modal-editor').classList.remove('hidden');
+                document.getElementById('editor-num-panels').value = gameConfig.panels.length;
+                document.getElementById('editor-final-phrase').value = gameConfig.finalPanel.phrase;
+                document.getElementById('editor-final-category').value = gameConfig.finalPanel.category;
+                document.getElementById('editor-final-gift').value = gameConfig.finalPanel.finalGiftText;
                 renderEditorPanels();
             } else if (password !== null) {
                 showGameAlert("❌", "Contraseña incorrecta.");
@@ -1003,14 +1046,51 @@
             state.lettersAlreadyPointsAdded.clear();
             state.hasSpunThisTurn = false;
             state.currentWheelSelection = null;
-            
+
             updateScoreboards();
             buildBoard(currentPanel.phrase);
             buildKeyboard();
-            
+
             gameStatusMessage.textContent = "Gira la ruleta en el botón inferior para empezar.";
             modalLastSpin.textContent = "-";
             modalLastSpin.style.color = "#ffffff";
+
+            // Mostrar categoría como pista
+            document.getElementById('hint-category').textContent = currentPanel.category;
+            document.getElementById('modal-category-hint').classList.remove('hidden');
+        }
+
+        function loadFinalPanelAsGame() {
+            // Mostrar anuncio del panel final primero
+            document.getElementById('modal-final-announcement').classList.remove('hidden');
+        }
+
+        function actuallyLoadFinalPanel() {
+            document.getElementById('modal-final-announcement').classList.add('hidden');
+
+            state.currentPanelIndex = PANELS_DATA.length; // Indicador de que es el panel final
+            const finalPanel = gameConfig.finalPanel;
+
+            currentPanelNumber.textContent = PANELS_DATA.length + 1; // Mostrar como siguiente panel
+            panelCategory.textContent = finalPanel.category;
+
+            state.currentBank = 0;
+            state.usedLetters = [];
+            state.lettersAlreadyPointsAdded.clear();
+            state.hasSpunThisTurn = false;
+            state.currentWheelSelection = null;
+
+            updateScoreboards();
+            buildBoard(finalPanel.phrase);
+            buildKeyboard();
+
+            gameStatusMessage.textContent = "🏆 ¡PANEL FINAL! Resuelve este último panel para descubrir tu regalo. 🏆";
+            modalLastSpin.textContent = "-";
+            modalLastSpin.style.color = "#ffffff";
+
+            // Mostrar categoría como pista
+            document.getElementById('hint-category').textContent = finalPanel.category;
+            document.getElementById('modal-category-hint').classList.remove('hidden');
         }
 
         // GENERACIÓN DEL TABLERO EN CASILLAS COMPACTAS
@@ -1075,7 +1155,7 @@
 
         function createLetterCell(letter) {
             const container = document.createElement('div');
-            container.className = "tile-3d w-6 h-8 sm:w-8 sm:h-10";
+            container.className = "tile-3d w-7 h-9 sm:w-10 sm:h-12 md:w-12 md:h-14";
             container.dataset.letter = letter;
 
             const inner = document.createElement('div');
@@ -1390,7 +1470,19 @@
 
         // ABRIR EL MODAL PARA RESOLVER
         btnSolve.addEventListener('click', () => {
-            const currentPanel = PANELS_DATA[state.currentPanelIndex];
+            let currentPanel;
+            // Detectar si es el panel final
+            if (state.currentPanelIndex >= PANELS_DATA.length) {
+                currentPanel = gameConfig.finalPanel;
+            } else {
+                currentPanel = PANELS_DATA[state.currentPanelIndex];
+            }
+
+            if (!currentPanel) {
+                showGameAlert("❌", "Error al cargar el panel");
+                return;
+            }
+
             solveCategoryHint.textContent = currentPanel.category;
             solveInput.value = "";
             modalSolve.classList.remove('hidden');
@@ -1401,7 +1493,14 @@
         });
 
         btnSubmitSolve.addEventListener('click', () => {
-            const currentPanel = PANELS_DATA[state.currentPanelIndex];
+            let currentPanel;
+            // Detectar si es el panel final
+            if (state.currentPanelIndex >= PANELS_DATA.length) {
+                currentPanel = gameConfig.finalPanel;
+            } else {
+                currentPanel = PANELS_DATA[state.currentPanelIndex];
+            }
+
             const answerUser = removeAccents(solveInput.value.trim().toUpperCase());
             const answerCorrect = removeAccents(currentPanel.phrase.toUpperCase());
 
@@ -1479,8 +1578,11 @@
                 resultMessage.textContent = "¡Has resuelto el panel con éxito!";
             }
 
-            if (state.currentPanelIndex + 1 >= PANELS_DATA.length) {
-                btnNextPanel.textContent = "¡Ver Podio Final! 🎉";
+            // Si es el panel final
+            if (state.currentPanelIndex >= PANELS_DATA.length) {
+                btnNextPanel.textContent = "🎉 ¡DESCUBRIR REGALO! 🎉";
+            } else if (state.currentPanelIndex + 1 >= PANELS_DATA.length) {
+                btnNextPanel.textContent = "¡Panel Final! 🏆";
             } else {
                 btnNextPanel.textContent = "Siguiente Panel ➔";
             }
@@ -1490,13 +1592,20 @@
 
         btnNextPanel.addEventListener('click', () => {
             modalResult.classList.add('hidden');
+
+            // Si ya completamos el panel final, mostrar celebración
+            if (state.currentPanelIndex >= PANELS_DATA.length) {
+                showFinalCelebration();
+                return;
+            }
+
             const nextIndex = state.currentPanelIndex + 1;
 
             if (nextIndex < PANELS_DATA.length) {
                 loadPanel(nextIndex);
             } else {
-                // Ir a la tienda después del panel 5
-                showShop();
+                // Después del último panel regular, cargar el panel final
+                loadFinalPanelAsGame();
             }
         });
 
@@ -1620,7 +1729,8 @@
             state.appliedConsonants = [];
 
             buildFinalBoard(finalPanel.phrase);
-            buildFinalHelps();
+            buildFinalKeyboard();
+            // buildFinalHelps(); // Removido: panel final sin ayudas compradas
 
             updateScoreboards();
 
@@ -1687,6 +1797,39 @@
 
                 finalBoardContainer.appendChild(rowDiv);
             });
+        }
+
+        function buildFinalKeyboard() {
+            finalKeyboardContainer.innerHTML = "";
+            const consonants = "BCDFGHJKLMNÑPQRSTVWXYZ";
+            const vowels = "AEIOU";
+
+            const keyboardDiv = document.createElement('div');
+            keyboardDiv.className = "space-y-2";
+
+            const consonantDiv = document.createElement('div');
+            consonantDiv.className = "grid grid-cols-7 gap-1";
+            for (let char of consonants) {
+                const btn = document.createElement('button');
+                btn.textContent = char;
+                btn.className = "bg-blue-600 hover:bg-blue-500 text-white font-extrabold py-1.5 rounded text-xs active:scale-95";
+                btn.addEventListener('click', () => chooseFinalLetter(char, false));
+                consonantDiv.appendChild(btn);
+            }
+
+            const vowelDiv = document.createElement('div');
+            vowelDiv.className = "grid grid-cols-5 gap-1 pt-2 border-t border-slate-800";
+            for (let char of vowels) {
+                const btn = document.createElement('button');
+                btn.textContent = char;
+                btn.className = "bg-amber-600 hover:bg-amber-500 text-white font-extrabold py-1.5 rounded text-xs active:scale-95";
+                btn.addEventListener('click', () => chooseFinalLetter(char, true));
+                vowelDiv.appendChild(btn);
+            }
+
+            keyboardDiv.appendChild(consonantDiv);
+            keyboardDiv.appendChild(vowelDiv);
+            finalKeyboardContainer.appendChild(keyboardDiv);
         }
 
         function buildFinalHelps() {
@@ -1801,7 +1944,7 @@
                 state.boughtItems.allVowels = false;
             }
 
-            buildFinalHelps();
+            // buildFinalHelps(); // Removido: panel final sin ayudas compradas
         }
 
         function revealFinalLetter(letter) {
@@ -1859,6 +2002,24 @@
                     showGameAlert("❌", "¡Solución incorrecta!");
                 }
             };
+        });
+
+        function showFinalCelebration() {
+            // Ocultar pantalla de juego
+            gameHeader.classList.add('hidden');
+            screenGame.classList.add('hidden');
+
+            // Mostrar pantalla de celebración
+            document.getElementById('screen-final-celebration').classList.remove('hidden');
+
+            // Lanzar confeti
+            launchParty();
+        }
+
+        document.getElementById('btn-see-message').addEventListener('click', () => {
+            // Aquí irá la pantalla de mensaje personalizado
+            // Por ahora, solo recargamos
+            showGameAlert("✨", "¡Mensaje personalizado próximamente!");
         });
 
         btnPlayAgain.addEventListener('click', () => {
