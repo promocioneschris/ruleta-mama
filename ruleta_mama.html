@@ -1,0 +1,1779 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>La Ruleta de la Suerte - Edición Especial</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts para una tipografía de concurso televisivo -->
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka+One&family=Lexend:wght@400;600;800&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Lexend', sans-serif;
+            background: radial-gradient(circle, #0f172a 0%, #020617 100%);
+            height: 100dvh;
+            color: #f8fafc;
+            overflow: hidden;
+            /* Evitar rebotes táctiles y selecciones accidentales de texto en móviles */
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        .title-font {
+            font-family: 'Fredoka One', cursive;
+        }
+        /* Luces de neón de concurso */
+        .neon-glow {
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.4), 0 0 5px rgba(59, 130, 246, 0.2);
+        }
+        .neon-glow-emerald {
+            box-shadow: 0 0 15px rgba(16, 185, 129, 0.4), 0 0 5px rgba(16, 185, 129, 0.2);
+        }
+        /* Casillas de ruleta con efecto de giro 3D */
+        .tile-3d {
+            perspective: 800px;
+        }
+        .tile-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+            transform-style: preserve-3d;
+        }
+        .tile-revealed .tile-inner {
+            transform: rotateY(180deg);
+        }
+        .tile-front, .tile-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 0.25rem;
+        }
+        .tile-front {
+            background: linear-gradient(135deg, #1d4ed8 0%, #1e40af 100%);
+            border: 1.5px solid #3b82f6;
+            box-shadow: inset 0 1px 3px rgba(255, 255, 255, 0.2);
+        }
+        .tile-back {
+            background: linear-gradient(135deg, #ffffff 0%, #f1f5f9 100%);
+            color: #0f172a;
+            transform: rotateY(180deg);
+            border: 1.5px solid #cbd5e1;
+            font-weight: 800;
+        }
+        /* Ruleta interactiva */
+        .wheel-container {
+            position: relative;
+            width: 260px;
+            height: 260px;
+        }
+        @media (min-height: 700px) {
+            .wheel-container {
+                width: 320px;
+                height: 320px;
+            }
+        }
+        .wheel-svg {
+            width: 100%;
+            height: 100%;
+            transition: transform 4s cubic-bezier(0.1, 0.8, 0.1, 1);
+        }
+        /* Centrar la flecha indicadora */
+        .pointer {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            z-index: 30;
+            filter: drop-shadow(0 3px 4px rgba(0,0,0,0.4));
+            width: 28px;
+            height: auto;
+        }
+        /* Scrollbars elegantes en pantallas que los necesiten */
+        .custom-scroll::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scroll::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scroll::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body class="flex flex-col justify-between p-3 safe-bottom safe-top">
+
+    <!-- CONTENEDOR PRINCIPAL QUE SE AJUSTA AL ALTO DE PANTALLA -->
+    <div class="w-full max-w-md lg:max-w-5xl mx-auto flex flex-col h-full justify-between gap-2.5">
+
+        <!-- CABECERA DE LA APP (Marcadores e información rápida) -->
+        <header id="game-header" class="hidden flex-col gap-2 bg-slate-900/90 border border-slate-800 rounded-2xl p-3 neon-glow">
+            <div class="flex justify-between items-center">
+                <div class="flex items-center gap-2">
+                    <div class="bg-yellow-500 text-slate-950 px-2 py-0.5 rounded-lg font-black text-xs title-font shadow">TV</div>
+                    <span id="header-player-name" class="text-sm font-extrabold text-white truncate max-w-[120px]">Invitado</span>
+                </div>
+                <div class="text-xs text-slate-400 font-bold">
+                    Panel <span id="current-panel-number" class="text-yellow-400 font-black">1</span>/<span id="total-panels">5</span>
+                </div>
+            </div>
+
+            <!-- Marcadores horizontales tipo píldora -->
+            <div class="grid grid-cols-3 gap-2">
+                <div class="bg-slate-950/80 rounded-xl py-1.5 px-2 border border-slate-800 text-center">
+                    <span class="text-[8px] text-slate-400 uppercase font-black tracking-widest block">Este Panel</span>
+                    <span id="display-current-bank" class="text-base font-black text-yellow-400 title-font">0 Pts</span>
+                </div>
+                <div class="bg-blue-900/20 rounded-xl py-1.5 px-2 border border-blue-500/20 text-center">
+                    <span class="text-[8px] text-blue-300 uppercase font-black tracking-widest block">Acumulado</span>
+                    <span id="display-total-bank" class="text-base font-black text-blue-300 title-font">0 Pts</span>
+                </div>
+                <div id="wildcard-indicator" class="bg-emerald-950/40 rounded-xl py-1.5 px-2 border border-emerald-500/20 text-center flex flex-col justify-center items-center">
+                    <span class="text-[8px] text-emerald-400 uppercase font-black tracking-widest block">Comodines</span>
+                    <span id="display-wildcards" class="text-sm font-black text-emerald-300">🎟️ x0</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- SECCIÓN DE VISTAS PRINCIPALES -->
+        <main class="flex-grow flex flex-col justify-center overflow-hidden">
+
+            <!-- 1. BIENVENIDA ESPECTACULAR -->
+            <section id="screen-welcome" class="flex flex-col justify-center items-center h-full gap-6 px-4 relative overflow-hidden">
+                <!-- Ruleta SVG de fondo difuminada y giratoria -->
+                <div class="absolute inset-0 flex items-center justify-center opacity-10 pointer-events-none">
+                    <svg class="w-96 h-96 animate-spin" style="animation-duration: 15s;" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="200" cy="200" r="180" fill="none" stroke="#fbbf24" stroke-width="2"/>
+                        <circle cx="200" cy="200" r="170" fill="none" stroke="#f59e0b" stroke-width="1" opacity="0.5"/>
+                        <!-- Gajos de la ruleta -->
+                        <path d="M 200 200 L 200 20 A 180 180 0 0 1 327 54.7" fill="#ef4444" opacity="0.7"/>
+                        <path d="M 200 200 L 327 54.7 A 180 180 0 0 1 380 127" fill="#f97316" opacity="0.7"/>
+                        <path d="M 200 200 L 380 127 A 180 180 0 0 1 345.3 327" fill="#000000" opacity="0.7"/>
+                        <path d="M 200 200 L 345.3 327 A 180 180 0 0 1 200 380" fill="#eab308" opacity="0.7"/>
+                        <path d="M 200 200 L 200 380 A 180 180 0 0 1 54.7 345.3" fill="#22c55e" opacity="0.7"/>
+                        <path d="M 200 200 L 54.7 345.3 A 180 180 0 0 1 20 200" fill="#10b981" opacity="0.7"/>
+                        <path d="M 200 200 L 20 200 A 180 180 0 0 1 54.7 54.7" fill="#f43f5e" opacity="0.7"/>
+                        <path d="M 200 200 L 54.7 54.7 A 180 180 0 0 1 200 20" fill="#06b6d4" opacity="0.7"/>
+                        <!-- Centro -->
+                        <circle cx="200" cy="200" r="20" fill="#fbbf24"/>
+                        <circle cx="200" cy="200" r="12" fill="#000000"/>
+                    </svg>
+                </div>
+
+                <div class="text-center space-y-8 relative z-10">
+                    <div class="space-y-4">
+                        <h1 class="text-7xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-300 via-pink-300 to-emerald-300 title-font leading-tight">
+                            ¡FELIZ<br>CUMPLEAÑOS<br>MAMÁ!
+                        </h1>
+                        <p class="text-6xl animate-bounce">🎉</p>
+                    </div>
+
+                    <div class="space-y-2">
+                        <div class="inline-block bg-gradient-to-r from-yellow-500 to-amber-500 text-slate-950 font-black text-xs px-4 py-1.5 rounded-full uppercase tracking-wider shadow-lg">Concurso Especial</div>
+                        <h2 class="text-4xl font-black text-white title-font">La Ruleta de la Suerte</h2>
+                    </div>
+                </div>
+
+                <div class="bg-gradient-to-b from-emerald-950/60 to-emerald-900/40 border-2 border-emerald-500/60 rounded-2xl p-6 max-w-sm w-full shadow-2xl space-y-4">
+                    <p class="text-center text-white font-bold text-lg">Tu regalo especial te espera...</p>
+                    <p class="text-center text-slate-300 text-sm leading-relaxed">Para descubrir qué sorpresa hemos preparado, deberás ganarla en este concurso de televisión.</p>
+                    <p class="text-center text-amber-300 font-black text-sm">¿Estás lista para el reto? ⭐</p>
+                </div>
+
+                <!-- Botón Editor (pequeño, abajo) -->
+                <button id="btn-editor-mode" class="text-[9px] text-slate-500 hover:text-slate-400 font-bold uppercase tracking-wider px-2 py-1 rounded hover:bg-slate-900/50">
+                    ⚙️ Modo Editor
+                </button>
+
+                <button id="btn-start-game" class="w-full max-w-xs bg-gradient-to-r from-yellow-500 to-amber-500 text-slate-950 font-black text-lg py-4 px-6 rounded-xl shadow-lg transition-transform active:scale-95 duration-150">
+                    ¡Comenzar Concurso! 🎮
+                </button>
+            </section>
+
+            <!-- 2. TABLERO DE JUEGO (MÓVIL-FIRST) -->
+            <section id="screen-game" class="hidden flex flex-col justify-between h-full gap-2.5 overflow-y-auto">
+                
+                <!-- Categoría del Panel actual -->
+                <div class="bg-slate-900/80 border border-slate-800 rounded-xl px-3 py-1.5 flex justify-between items-center">
+                    <span class="text-[9px] bg-indigo-500/20 text-indigo-300 border border-indigo-500/20 px-2 py-0.5 rounded uppercase font-black tracking-wider">Categoría</span>
+                    <h3 id="panel-category" class="text-xs font-black text-white truncate max-w-[240px]">Cargando...</h3>
+                </div>
+
+                <!-- Tablero táctil elástico -->
+                <div class="bg-emerald-950/40 border-2 border-emerald-500/60 rounded-2xl p-2.5 shadow-xl flex flex-col gap-1 items-center justify-center min-h-[140px] flex-grow">
+                    <div id="board-rows-container" class="w-full flex flex-col gap-1 items-center">
+                        <!-- Filas de casillas generadas dinámicamente -->
+                    </div>
+                </div>
+
+                <!-- Barra de Instrucción Rápida -->
+                <div class="bg-slate-900/50 rounded-xl p-2 flex items-center gap-2 border border-slate-800">
+                    <span class="text-xs">📢</span>
+                    <p id="game-status-message" class="text-[11px] font-medium text-slate-300 truncate">Pulsa "Girar Ruleta" para empezar a puntuar.</p>
+                </div>
+
+                <!-- Teclado de letras e indicador superior -->
+                <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3 flex flex-col gap-2">
+                    
+                    <!-- Pestaña e interruptores de letras -->
+                    <div class="flex justify-between items-center gap-2 pb-2 border-b border-slate-800">
+                        <span class="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Elige letra</span>
+                        <button id="btn-buy-vowel" class="hidden bg-gradient-to-r from-amber-500 to-yellow-500 hover:from-amber-400 hover:to-yellow-400 text-slate-950 font-black text-xs py-1.5 px-3 rounded-lg shadow-lg animate-pulse">
+                            🎤 Comprar Vocal (200 Pts)
+                        </button>
+                    </div>
+
+                    <!-- Caja deslizable de consonantes para pantallas pequeñas -->
+                    <div class="max-h-[120px] overflow-y-auto custom-scroll pr-1">
+                        <div id="keyboard-consonants" class="grid grid-cols-7 gap-1">
+                            <!-- Botones consonantes -->
+                        </div>
+                    </div>
+
+                    <!-- Fila compacta de vocales -->
+                    <div id="keyboard-vowels" class="grid grid-cols-5 gap-1 pt-1.5 border-t border-slate-800/40">
+                        <!-- Botones vocales -->
+                    </div>
+                </div>
+
+                <!-- CONTROLES PRINCIPALES (PIE DE PANTALLA MÓVIL) -->
+                <div class="grid grid-cols-12 gap-2">
+                    <button id="btn-open-wheel" class="col-span-8 bg-gradient-to-r from-blue-500 to-indigo-600 hover:from-blue-400 hover:to-indigo-500 text-white font-black text-sm py-3 px-4 rounded-xl shadow-lg transition-transform active:scale-95 duration-100 flex items-center justify-center gap-2 neon-glow">
+                        🌀 GIRAR RULETA
+                    </button>
+                    <button id="btn-solve" class="col-span-4 bg-emerald-600 hover:bg-emerald-500 text-white font-black text-xs py-3 px-2 rounded-xl shadow-md transition-transform active:scale-95 duration-100 uppercase">
+                        🧠 Resolver
+                    </button>
+                </div>
+
+            </section>
+
+            <!-- 3. TIENDA DE AYUDAS -->
+            <section id="screen-shop" class="hidden flex flex-col justify-between h-full gap-4">
+
+                <div class="bg-slate-900/80 border border-slate-800 rounded-xl px-3 py-1.5 flex justify-between items-center">
+                    <span class="text-[9px] bg-emerald-500/20 text-emerald-300 border border-emerald-500/20 px-2 py-0.5 rounded uppercase font-black tracking-wider">Tienda</span>
+                    <h3 class="text-xs font-black text-white">¡Prepárate para la Final!</h3>
+                </div>
+
+                <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-4 flex-grow overflow-y-auto custom-scroll">
+                    <div class="space-y-2 mb-4">
+                        <p class="text-[9px] text-slate-400 uppercase font-bold tracking-wider">Puntos disponibles</p>
+                        <div class="text-3xl font-black text-yellow-400 title-font"id="shop-total-points">0 Pts</div>
+                    </div>
+
+                    <div id="shop-items-container" class="space-y-2">
+                        <!-- Items generados dinámicamente -->
+                    </div>
+                </div>
+
+                <button id="btn-go-final" class="w-full bg-gradient-to-r from-yellow-500 to-amber-500 text-slate-950 font-black text-base py-3 px-6 rounded-xl shadow-lg transition-transform active:scale-95 duration-150">
+                    ¡A la Gran Final! 🎬
+                </button>
+            </section>
+
+            <!-- 4. PANEL FINAL (Gran Final) -->
+            <section id="screen-final" class="hidden flex flex-col justify-between h-full gap-2.5">
+
+                <div class="bg-slate-900/80 border border-slate-800 rounded-xl px-3 py-1.5 flex justify-between items-center">
+                    <span class="text-[9px] bg-yellow-500/20 text-yellow-300 border border-yellow-500/20 px-2 py-0.5 rounded uppercase font-black tracking-wider">🏆 Final</span>
+                    <h3 id="final-category" class="text-xs font-black text-white truncate max-w-[240px]">Tu Premio Esperado...</h3>
+                </div>
+
+                <!-- Tablero del Panel Final -->
+                <div class="bg-emerald-950/40 border-2 border-emerald-500/60 rounded-2xl p-2.5 shadow-xl flex flex-col gap-1 items-center justify-center min-h-[140px] flex-grow">
+                    <div id="final-board-container" class="w-full flex flex-col gap-1 items-center">
+                        <!-- Casillas del panel final -->
+                    </div>
+                </div>
+
+                <!-- Teclado para aplicar ayudas -->
+                <div class="bg-slate-900/90 border border-slate-800 rounded-2xl p-3 flex flex-col gap-2">
+                    <div class="text-[10px] text-slate-400 font-bold uppercase tracking-wider pb-1.5 border-b border-slate-800">
+                        Usa tus Ayudas Compradas
+                    </div>
+
+                    <div id="final-helps-container" class="space-y-2">
+                        <!-- Botones de ayudas generados dinámicamente -->
+                    </div>
+
+                    <div id="final-keyboard-container" class="max-h-[120px] overflow-y-auto custom-scroll pr-1">
+                        <!-- Teclado para elegir letras manuales -->
+                    </div>
+                </div>
+
+                <!-- Botón Resolver Final -->
+                <button id="btn-solve-final" class="w-full bg-gradient-to-r from-yellow-500 to-amber-500 text-slate-950 font-black text-base py-3 px-6 rounded-xl shadow-lg transition-transform active:scale-95 duration-150">
+                    🎁 ¡RESOLVER LA FINAL! 🎁
+                </button>
+
+            </section>
+
+            <!-- 5. PANTALLA DE VICTORIA FINAL -->
+            <section id="screen-victory" class="hidden flex flex-col justify-center items-center h-full gap-6 px-4">
+
+                <div class="text-center space-y-4">
+                    <div class="text-7xl animate-bounce">🎉</div>
+                    <h2 id="victory-title" class="text-4xl font-black text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-amber-300 to-emerald-400 title-font">¡VICTORIA!</h2>
+                    <p id="victory-message" class="text-white text-lg font-bold max-w-md">Has ganado el gran premio.</p>
+                </div>
+
+                <div class="bg-slate-900/90 border-2 border-yellow-500 rounded-2xl p-6 text-center space-y-3 max-w-sm w-full">
+                    <p id="victory-gift" class="text-2xl font-black text-yellow-400">🎁 TU PREMIO</p>
+                    <p id="victory-gift-text" class="text-white text-sm leading-relaxed">¡Un viaje al paraíso te espera!</p>
+                    <div class="bg-slate-950/60 rounded-lg p-3 border border-slate-800">
+                        <p class="text-[9px] text-slate-400 uppercase font-bold">Puntos Totales</p>
+                        <p id="victory-total-points" class="text-3xl font-black text-blue-400 title-font mt-1">0 Pts</p>
+                    </div>
+                </div>
+
+                <button id="btn-play-again" class="w-full max-w-sm bg-gradient-to-r from-blue-500 to-indigo-600 text-white font-black text-base py-3 px-6 rounded-xl shadow-lg transition-transform active:scale-95 duration-150">
+                    🔄 Volver a Jugar
+                </button>
+
+            </section>
+
+        </main>
+
+        <!-- FOOTER COMPACTO -->
+        <footer class="text-center text-[9px] text-slate-600">
+            La Ruleta de la Suerte - Versión Móvil de Entretenimiento
+        </footer>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- NUEVA "ARENA DE LA RULETA" (MODAL OVERLAY EN SEGUNDO PLANO) -->
+    <div id="wheel-modal" class="hidden fixed inset-0 bg-slate-950/95 backdrop-blur-md flex flex-col items-center justify-center p-4 z-40">
+        
+        <div class="text-center space-y-1 mb-4">
+            <span class="text-[10px] bg-blue-500/20 text-blue-400 border border-blue-500/30 px-3 py-0.5 rounded-full uppercase tracking-widest font-black">Arena de la Ruleta</span>
+            <h4 class="text-lg font-black text-white title-font">¡Gira para marcar tu premio!</h4>
+        </div>
+
+        <!-- Ruleta Física SVG -->
+        <div class="bg-slate-900 border-4 border-slate-800 rounded-full p-4 relative shadow-2xl">
+            <!-- Flecha indicadora de la ruleta -->
+            <div class="pointer">
+                <svg viewBox="0 0 100 100" class="w-7 h-7 fill-current text-yellow-400 drop-shadow-lg">
+                    <polygon points="50,100 20,20 80,20" />
+                </svg>
+            </div>
+
+            <!-- Contenedor de la Ruleta SVG -->
+            <div class="wheel-container">
+                <svg id="wheel-svg" class="wheel-svg" viewBox="0 0 400 400">
+                    <!-- Gajos SVG -->
+                </svg>
+                <!-- Eje central -->
+                <div class="absolute inset-0 m-auto w-10 h-10 rounded-full bg-slate-950 border-4 border-yellow-400 shadow-xl flex items-center justify-center text-yellow-400 font-bold z-10">★</div>
+            </div>
+        </div>
+
+        <!-- Acciones de Ruleta dentro del modal -->
+        <div class="w-full max-w-xs mt-6 space-y-3 text-center">
+            
+            <!-- Última tirada mostrada -->
+            <div class="bg-slate-900/60 border border-slate-800 rounded-xl py-2 px-4 inline-block mx-auto min-w-[120px]">
+                <p class="text-[9px] text-slate-400 uppercase font-bold tracking-wider">Resultado obtenido</p>
+                <div id="modal-last-spin" class="text-xl font-black text-white mt-0.5">-</div>
+            </div>
+
+            <!-- Botones de acción del Modal -->
+            <button id="btn-spin" class="w-full bg-gradient-to-r from-yellow-500 to-amber-500 text-slate-950 font-black text-base py-3 px-6 rounded-xl shadow-lg transition-transform active:scale-95">
+                ¡Tirar de la Ruleta! 🌀
+            </button>
+
+            <!-- Botón para cerrar / volver al tablero que se habilita al sacar premio -->
+            <button id="btn-back-to-board" class="hidden w-full bg-slate-800 text-slate-300 font-bold text-sm py-2.5 px-4 rounded-xl transition-colors">
+                Ir al Tablero ➔
+            </button>
+        </div>
+
+    </div>
+
+    <!-- ========================================== -->
+    <!-- MODALES ADICIONALES (Resolver y Ganador) -->
+    
+    <!-- Modal: Resolver el panel -->
+    <div id="modal-solve" class="hidden fixed inset-0 bg-slate-950/90 flex items-center justify-center p-4 z-50">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 w-full max-w-xs shadow-2xl space-y-4 text-center">
+            <h3 class="text-lg font-black text-white title-font">¿Sabes la respuesta?</h3>
+            <p class="text-[9px] text-slate-400 uppercase tracking-widest truncate">Panel: <span id="solve-category-hint" class="text-yellow-400 font-bold">...</span></p>
+            
+            <input type="text" id="solve-input" class="w-full bg-slate-950 border border-slate-700 focus:border-emerald-500 text-center text-white text-base font-bold rounded-lg py-2.5 px-3 focus:outline-none tracking-wider uppercase" placeholder="ESCRIBE LA SOLUCIÓN">
+            
+            <div class="flex gap-2 text-xs">
+                <button id="btn-cancel-solve" class="w-1/2 bg-slate-800 text-slate-300 font-bold py-2 rounded-lg">Cancelar</button>
+                <button id="btn-submit-solve" class="w-1/2 bg-emerald-500 text-slate-950 font-black py-2 rounded-lg">¡Resolver!</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Resultados / Victoria del panel -->
+    <div id="modal-result" class="hidden fixed inset-0 bg-slate-950/95 flex items-center justify-center p-4 z-50">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 w-full max-w-xs shadow-2xl text-center space-y-4">
+            <div id="result-icon" class="text-5xl">🎉</div>
+            <h3 id="result-title" class="text-xl font-black text-white title-font">¡Excelente!</h3>
+            <p id="result-message" class="text-slate-300 text-xs">Has resuelto correctamente el panel.</p>
+            
+            <div class="bg-slate-950/80 p-3 rounded-xl border border-slate-800 flex justify-around">
+                <div>
+                    <span class="text-[9px] text-slate-400 uppercase font-semibold">Panel</span>
+                    <p id="result-panel-points" class="text-lg font-black text-yellow-400">0 Pts</p>
+                </div>
+                <div>
+                    <span class="text-[9px] text-slate-400 uppercase font-semibold">Total</span>
+                    <p id="result-total-points" class="text-lg font-black text-blue-400">0 Pts</p>
+                </div>
+            </div>
+
+            <button id="btn-next-panel" class="w-full bg-gradient-to-r from-yellow-500 to-amber-500 text-slate-950 font-black text-sm py-2.5 px-4 rounded-xl shadow">
+                Siguiente Panel ➔
+            </button>
+        </div>
+    </div>
+
+    <!-- Alertas flotantes del presentador (Auto-ocultables) -->
+    <div id="modal-alert" class="hidden fixed bottom-16 inset-x-4 flex justify-center z-50 pointer-events-none">
+        <div id="alert-box" class="bg-indigo-950/90 border border-indigo-500 text-white rounded-xl py-2 px-4 shadow-xl font-bold flex items-center gap-2 max-w-xs pointer-events-auto">
+            <span id="alert-emoji" class="text-sm">😮</span>
+            <span id="alert-text" class="text-xs">¡Mensaje de alerta de juego!</span>
+        </div>
+    </div>
+
+    <!-- Modal: Instrucción inicial "Gira la ruleta" -->
+    <div id="modal-first-spin" class="hidden fixed inset-0 bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-4 z-50">
+        <div class="bg-slate-900 border-2 border-yellow-500 rounded-2xl p-8 max-w-xs shadow-2xl text-center space-y-6 animate-pulse">
+            <div class="text-6xl">🌀</div>
+            <div class="space-y-2">
+                <h3 class="text-2xl font-black text-yellow-400 title-font">¡PRIMER PASO!</h3>
+                <p class="text-white font-bold text-lg">Gira la ruleta</p>
+                <p class="text-slate-400 text-sm">Descubre cuántos puntos puedes ganar con la siguiente letra.</p>
+            </div>
+            <button id="btn-close-first-spin" class="w-full bg-gradient-to-r from-yellow-500 to-amber-500 text-slate-950 font-black text-base py-3 px-6 rounded-xl shadow-lg transition-transform active:scale-95">
+                Entendido ✓
+            </button>
+        </div>
+    </div>
+
+    <!-- Modal: Editor de paneles -->
+    <div id="modal-editor" class="hidden fixed inset-0 bg-slate-950/95 backdrop-blur-md flex items-center justify-center p-4 z-50 overflow-y-auto">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-2xl w-full shadow-2xl">
+            <!-- Header -->
+            <div class="flex justify-between items-center p-6 border-b border-slate-800">
+                <h3 class="text-2xl font-black text-white title-font">⚙️ Personaliza el Juego</h3>
+                <button id="btn-close-editor" class="text-slate-400 hover:text-white text-2xl">✕</button>
+            </div>
+
+            <!-- Contenido scrolleable -->
+            <div class="p-6 space-y-6 max-h-96 overflow-y-auto custom-scroll">
+                <!-- Paneles -->
+                <div>
+                    <h4 class="text-amber-400 font-black text-sm mb-3 uppercase tracking-wider">📋 Paneles Normales</h4>
+                    <div id="editor-panels-container" class="space-y-2">
+                        <!-- Generados dinámicamente -->
+                    </div>
+                </div>
+
+                <!-- Panel Final -->
+                <div class="border-t border-slate-800 pt-4">
+                    <h4 class="text-pink-400 font-black text-sm mb-3 uppercase tracking-wider">🎁 Panel Final (El Regalo)</h4>
+                    <div class="bg-slate-950/60 border border-slate-800 rounded-lg p-4 space-y-2">
+                        <input type="text" id="editor-final-phrase" placeholder="Frase del regalo" class="w-full bg-slate-900 border border-slate-700 text-white rounded px-3 py-2 text-sm font-semibold focus:border-pink-500">
+                        <input type="text" id="editor-final-category" placeholder="Categoría" class="w-full bg-slate-900 border border-slate-700 text-white rounded px-3 py-2 text-sm font-semibold focus:border-pink-500">
+                        <input type="text" id="editor-final-gift" placeholder="Mensaje de celebración" class="w-full bg-slate-900 border border-slate-700 text-white rounded px-3 py-2 text-sm font-semibold focus:border-pink-500">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Footer con botones -->
+            <div class="p-6 border-t border-slate-800 space-y-2">
+                <button id="btn-download-html" class="w-full bg-gradient-to-r from-yellow-500 to-amber-500 hover:from-yellow-400 hover:to-amber-400 text-slate-950 font-black text-base py-3 px-4 rounded-xl shadow-lg transition-transform active:scale-95">
+                    📥 Descargar HTML Personalizado
+                </button>
+                <button id="btn-save-editor" class="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-black text-sm py-2 px-4 rounded-lg">
+                    ✅ Guardar y Jugar Aquí
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT DE JUEGO MÓVIL-FIRST -->
+    <script>
+        // ============================================
+        // CONFIGURACIÓN CENTRAL DEL JUEGO
+        // ============================================
+        const gameConfig = {
+            title: "La Ruleta de la Suerte",
+            subtitle: "Edición de Bolsillo",
+
+            panels: [
+                {
+                    phrase: "LA RULETA DE LA SUERTE",
+                    category: "NUESTRO CONCURSO DE TELEVISION",
+                    completionBonus: 50
+                },
+                {
+                    phrase: "MAS VALE PAJARO EN MANO QUE CIENTO VOLANDO",
+                    category: "REFRANES POPULARES",
+                    completionBonus: 50
+                },
+                {
+                    phrase: "DON QUIJOTE DE LA MANCHA",
+                    category: "LITERATURA CLASICA",
+                    completionBonus: 50
+                },
+                {
+                    phrase: "EL AGUA HIERVE A CIEN GRADOS",
+                    category: "CIENCIA DIVERTIDA",
+                    completionBonus: 50
+                },
+                {
+                    phrase: "SUPER MARIO BROS",
+                    category: "VIDEOJUEGOS FAMOSOS",
+                    completionBonus: 50
+                }
+            ],
+
+            finalPanel: {
+                phrase: "UN VIAJE A DISNEY",
+                category: "TU GRAN PREMIO FINAL",
+                finalGiftText: "🎉 ¡Felicidades! ¡Has ganado un viaje a Disney! 🎊",
+                initialRevealLetters: ["R", "S", "F", "Y", "O", "U"]
+            },
+
+            wheelSegments: [
+                { label: "100 PTS", type: "points", value: 100, color: "#ef4444" },
+                { label: "150 PTS", type: "points", value: 150, color: "#f97316" },
+                { label: "QUIEBRA", type: "bankrupt", value: 0, color: "#000000" },
+                { label: "200 PTS", type: "points", value: 200, color: "#eab308" },
+                { label: "250 PTS", type: "points", value: 250, color: "#22c55e" },
+                { label: "COMODIN", type: "wildcard", value: 1, color: "#10b981" },
+                { label: "VOCAL", type: "vowel", value: 0, color: "#f43f5e" },
+                { label: "300 PTS", type: "points", value: 300, color: "#06b6d4" },
+                { label: "VOC+CON", type: "vowel_consonant", value: 200, color: "#6366f1" },
+                { label: "350 PTS", type: "points", value: 350, color: "#a855f7" },
+                { label: "400 PTS", type: "points", value: 400, color: "#ec4899" },
+                { label: "1000 PTS", type: "points", value: 1000, color: "#fbbf24" }
+            ],
+
+            shopItems: [
+                { id: "vowel", label: "Revelar una Vocal", cost: 100, type: "single_vowel", quantity: 2 },
+                { id: "consonant", label: "Revelar una Consonante", cost: 150, type: "single_consonant", quantity: 2 },
+                { id: "all_vowels", label: "Todas las Vocales", cost: 250, type: "all_vowels", quantity: 1 },
+                { id: "hint", label: "Pista Extra", cost: 75, type: "hint", quantity: 1 },
+                { id: "wildcard", label: "Comodín Final", cost: 300, type: "final_wildcard", quantity: 1 }
+            ],
+
+            messages: {
+                welcome: "Gira la ruleta, destapa letras y resuelve paneles temáticos desde tu pantalla.",
+                startButton: "¡Comenzar Concurso! 🎬",
+                spinButton: "🌀 GIRAR RULETA",
+                solveButton: "🧠 Resolver",
+                shopTitle: "🛍️ Tienda de Ayudas",
+                shopDescription: "Tienes estos puntos para gastar. ¡Elige sabiamente!",
+                finalReady: "¡Estás listo para la GRAN FINAL!"
+            }
+        };
+
+        // Alias para compatibilidad
+        const PANELS_DATA = gameConfig.panels;
+        const WHEEL_SECTOR_VALS = gameConfig.wheelSegments;
+
+        // ESTADO GLOBAL
+        let state = {
+            playerName: "Participante",
+            currentPanelIndex: 0,
+            currentBank: 0,
+            totalBank: 0,
+            wildcards: 0,
+            currentWheelSelection: null,
+            hasSpunThisTurn: false,
+            usedLetters: [],
+            boardLettersRevealed: 0,
+            totalBoardLettersToReveal: 0,
+            isProcessingLetter: false, // Flag para prevenir re-entrada
+            // Tienda y panel final
+            boughtItems: {
+                vowels: 0,
+                consonants: 0,
+                allVowels: false,
+                hints: 0,
+                finalWildcard: false
+            },
+            appliedVowels: [],
+            appliedConsonants: [],
+            gamePhase: "welcome" // welcome, game, shop, final, victory
+        };
+
+        // CONTROLES DE AUDIO SINTETIZADO (Web Audio API)
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        
+        function playTone(freq, type, duration) {
+            try {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = type || 'sine';
+                osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+                gain.gain.setValueAtTime(0.1, audioCtx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start();
+                osc.stop(audioCtx.currentTime + duration);
+            } catch(e) {}
+        }
+
+        function playSound(name) {
+            if (name === 'success') {
+                playTone(523.25, 'sine', 0.1);
+                setTimeout(() => playTone(659.25, 'sine', 0.12), 100);
+            } else if (name === 'error') {
+                playTone(220, 'triangle', 0.25);
+            } else if (name === 'spin') {
+                playTone(400, 'sine', 0.04);
+            } else if (name === 'bankruptcy') {
+                playTone(196, 'sawtooth', 0.4);
+                setTimeout(() => playTone(147, 'sawtooth', 0.4), 150);
+            } else if (name === 'win') {
+                playTone(523.25, 'sine', 0.15);
+                setTimeout(() => playTone(587.33, 'sine', 0.15), 120);
+                setTimeout(() => playTone(659.25, 'sine', 0.15), 240);
+                setTimeout(() => playTone(783.99, 'sine', 0.3), 360);
+            }
+        }
+
+        // ELEMENTOS DOM - PANTALLAS PRINCIPALES
+        const screenWelcome = document.getElementById('screen-welcome');
+        const screenGame = document.getElementById('screen-game');
+        const screenShop = document.getElementById('screen-shop');
+        const screenFinal = document.getElementById('screen-final');
+        const screenVictory = document.getElementById('screen-victory');
+        const gameHeader = document.getElementById('game-header');
+        
+        const btnStartGame = document.getElementById('btn-start-game');
+        
+        const headerPlayerName = document.getElementById('header-player-name');
+        const displayCurrentBank = document.getElementById('display-current-bank');
+        const displayTotalBank = document.getElementById('display-total-bank');
+        const wildcardIndicator = document.getElementById('wildcard-indicator');
+        const displayWildcards = document.getElementById('display-wildcards');
+        
+        const panelCategory = document.getElementById('panel-category');
+        const currentPanelNumber = document.getElementById('current-panel-number');
+        const totalPanels = document.getElementById('total-panels');
+        const boardRowsContainer = document.getElementById('board-rows-container');
+        
+        const gameStatusMessage = document.getElementById('game-status-message');
+        const modalLastSpin = document.getElementById('modal-last-spin');
+        
+        const keyboardConsonants = document.getElementById('keyboard-consonants');
+        const keyboardVowels = document.getElementById('keyboard-vowels');
+        const btnBuyVowel = document.getElementById('btn-buy-vowel');
+        
+        const btnSpin = document.getElementById('btn-spin');
+        const btnSolve = document.getElementById('btn-solve');
+        const wheelSvg = document.getElementById('wheel-svg');
+        const wheelModal = document.getElementById('wheel-modal');
+        const btnOpenWheel = document.getElementById('btn-open-wheel');
+        const btnBackToBoard = document.getElementById('btn-back-to-board');
+        
+        const modalSolve = document.getElementById('modal-solve');
+        const solveCategoryHint = document.getElementById('solve-category-hint');
+        const solveInput = document.getElementById('solve-input');
+        const btnCancelSolve = document.getElementById('btn-cancel-solve');
+        const btnSubmitSolve = document.getElementById('btn-submit-solve');
+        
+        const modalResult = document.getElementById('modal-result');
+        const resultIcon = document.getElementById('result-icon');
+        const resultTitle = document.getElementById('result-title');
+        const resultMessage = document.getElementById('result-message');
+        const resultPanelPoints = document.getElementById('result-panel-points');
+        const resultTotalPoints = document.getElementById('result-total-points');
+        const btnNextPanel = document.getElementById('btn-next-panel');
+        
+        const modalAlert = document.getElementById('modal-alert');
+        const alertEmoji = document.getElementById('alert-emoji');
+        const alertText = document.getElementById('alert-text');
+
+        // TIENDA
+        const shopTotalPoints = document.getElementById('shop-total-points');
+        const shopItemsContainer = document.getElementById('shop-items-container');
+        const btnGoFinal = document.getElementById('btn-go-final');
+
+        // PANEL FINAL
+        const finalCategory = document.getElementById('final-category');
+        const finalBoardContainer = document.getElementById('final-board-container');
+        const finalHelpsContainer = document.getElementById('final-helps-container');
+        const finalKeyboardContainer = document.getElementById('final-keyboard-container');
+        const btnSolveFinal = document.getElementById('btn-solve-final');
+
+        // VICTORIA
+        const victoryTitle = document.getElementById('victory-title');
+        const victoryMessage = document.getElementById('victory-message');
+        const victoryGiftText = document.getElementById('victory-gift-text');
+        const victoryTotalPoints = document.getElementById('victory-total-points');
+        const btnPlayAgain = document.getElementById('btn-play-again');
+
+        // INICIO DE JUEGO
+        btnStartGame.addEventListener('click', () => {
+            state.playerName = "Pilar";
+            headerPlayerName.textContent = state.playerName;
+
+            screenWelcome.classList.add('hidden');
+            gameHeader.classList.remove('hidden');
+            screenGame.classList.remove('hidden');
+
+            initGame();
+
+            // Mostrar instrucción de gira la ruleta
+            setTimeout(() => {
+                document.getElementById('modal-first-spin').classList.remove('hidden');
+            }, 300);
+        });
+
+        document.getElementById('btn-close-first-spin').addEventListener('click', () => {
+            document.getElementById('modal-first-spin').classList.add('hidden');
+            // Abrir la ruleta automáticamente
+            setTimeout(() => {
+                wheelModal.classList.remove('hidden');
+                btnBackToBoard.classList.add('hidden');
+                btnSpin.disabled = false;
+                btnSpin.classList.remove('opacity-50');
+            }, 300);
+        });
+
+        // ============================================
+        // MODO EDITOR
+        // ============================================
+        document.getElementById('btn-editor-mode').addEventListener('click', () => {
+            const password = prompt("🔐 Contraseña para entrar al modo editor:");
+            if (password === "cacadelavaca") {
+                document.getElementById('modal-editor').classList.remove('hidden');
+                renderEditorPanels();
+            } else if (password !== null) {
+                showGameAlert("❌", "Contraseña incorrecta.");
+            }
+        });
+
+        document.getElementById('btn-close-editor').addEventListener('click', () => {
+            document.getElementById('modal-editor').classList.add('hidden');
+        });
+
+        function renderEditorPanels() {
+            const container = document.getElementById('editor-panels-container');
+            container.innerHTML = '';
+
+            gameConfig.panels.forEach((panel, index) => {
+                const panelDiv = document.createElement('div');
+                panelDiv.className = 'bg-slate-900/60 border border-slate-700 rounded-lg p-3 space-y-2';
+
+                const titleInput = document.createElement('input');
+                titleInput.type = 'text';
+                titleInput.placeholder = 'Categoría';
+                titleInput.value = panel.category;
+                titleInput.className = 'w-full bg-slate-900 border border-slate-700 text-white rounded px-2 py-1 text-xs';
+                titleInput.addEventListener('change', (e) => panel.category = e.target.value);
+
+                const phraseInput = document.createElement('input');
+                phraseInput.type = 'text';
+                phraseInput.placeholder = 'Frase/Palabra';
+                phraseInput.value = panel.phrase;
+                phraseInput.className = 'w-full bg-slate-900 border border-slate-700 text-white rounded px-2 py-1 text-xs';
+                phraseInput.addEventListener('change', (e) => panel.phrase = e.target.value);
+
+                const bonusInput = document.createElement('input');
+                bonusInput.type = 'number';
+                bonusInput.placeholder = 'Bonus';
+                bonusInput.value = panel.completionBonus || 0;
+                bonusInput.className = 'w-full bg-slate-900 border border-slate-700 text-white rounded px-2 py-1 text-xs';
+                bonusInput.addEventListener('change', (e) => panel.completionBonus = parseInt(e.target.value));
+
+                const label = document.createElement('p');
+                label.className = 'text-xs text-slate-400 font-bold';
+                label.textContent = `Panel ${index + 1}`;
+
+                panelDiv.appendChild(label);
+                panelDiv.appendChild(titleInput);
+                panelDiv.appendChild(phraseInput);
+                panelDiv.appendChild(bonusInput);
+                container.appendChild(panelDiv);
+            });
+        }
+
+        function saveEditorChanges() {
+            // Guardar panel final
+            gameConfig.finalPanel.phrase = document.getElementById('editor-final-phrase').value;
+            gameConfig.finalPanel.category = document.getElementById('editor-final-category').value;
+            gameConfig.finalPanel.finalGiftText = document.getElementById('editor-final-gift').value;
+        }
+
+        document.getElementById('btn-download-html').addEventListener('click', () => {
+            saveEditorChanges();
+            downloadUpdatedHTML();
+        });
+
+        document.getElementById('btn-save-editor').addEventListener('click', () => {
+            saveEditorChanges();
+
+            // Guardar en localStorage
+            localStorage.setItem('gameConfig', JSON.stringify(gameConfig));
+
+            document.getElementById('modal-editor').classList.add('hidden');
+            showGameAlert("✅", "¡Cambios guardados! Ahora puedes jugar.");
+        });
+
+        function downloadUpdatedHTML() {
+            // Obtener el HTML actual
+            const htmlContent = document.documentElement.outerHTML;
+
+            // Reemplazar gameConfig en el HTML con la versión actualizada
+            const updatedHTML = htmlContent.replace(
+                /const gameConfig = \{[\s\S]*?\};/,
+                `const gameConfig = ${JSON.stringify(gameConfig, null, 2)};`
+            );
+
+            // Crear blob y descargar
+            const blob = new Blob([updatedHTML], { type: 'text/html' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'ruleta_mama_personalizada.html';
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+
+            showGameAlert("📥", "¡Descargado! Comparte este archivo.");
+        }
+
+        // Cargar configuración guardada al iniciar
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedConfig = localStorage.getItem('gameConfig');
+            if (savedConfig) {
+                try {
+                    Object.assign(gameConfig, JSON.parse(savedConfig));
+                } catch (e) {
+                    console.log('No saved config found');
+                }
+            }
+        });
+
+        function initGame() {
+            totalPanels.textContent = PANELS_DATA.length;
+            drawWheel();
+            loadPanel(0);
+        }
+
+        // CONTROL DE SEGUNDO PLANO (MODAL DE LA RULETA)
+        btnOpenWheel.addEventListener('click', () => {
+            if (state.hasSpunThisTurn) {
+                showGameAlert("⚠️", "Elige una letra antes de volver a girar.");
+                return;
+            }
+            // Abrir overlay de ruleta
+            wheelModal.classList.remove('hidden');
+            btnBackToBoard.classList.add('hidden');
+            btnSpin.disabled = false;
+            btnSpin.classList.remove('opacity-50');
+        });
+
+        btnBackToBoard.addEventListener('click', () => {
+            wheelModal.classList.add('hidden');
+        });
+
+        // DIBUJAR LA RULETA SVG DINÁMICAMENTE
+        function drawWheel() {
+            const totalSectors = WHEEL_SECTOR_VALS.length;
+            const anglePerSector = 360 / totalSectors;
+            const cx = 200, cy = 200, r = 180;
+            let wheelContent = "";
+
+            WHEEL_SECTOR_VALS.forEach((sector, i) => {
+                const startAngle = i * anglePerSector;
+                const endAngle = (i + 1) * anglePerSector;
+                
+                const startRad = (startAngle - 90) * Math.PI / 180;
+                const endRad = (endAngle - 90) * Math.PI / 180;
+                
+                const x1 = cx + r * Math.cos(startRad);
+                const y1 = cy + r * Math.sin(startRad);
+                const x2 = cx + r * Math.cos(endRad);
+                const y2 = cy + r * Math.sin(endRad);
+                
+                wheelContent += `
+                    <path d="M ${cx} ${cy} L ${x1} ${y1} A ${r} ${r} 0 0 1 ${x2} ${y2} Z" 
+                          fill="${sector.color}" 
+                          stroke="#020617" 
+                          stroke-width="2" />
+                `;
+
+                const midAngle = startAngle + (anglePerSector / 2);
+                const textAngle = midAngle - 90;
+                
+                const textDist = r * 0.7;
+                const tx = cx + textDist * Math.cos(textAngle * Math.PI / 180);
+                const ty = cy + textDist * Math.sin(textAngle * Math.PI / 180);
+
+                wheelContent += `
+                    <text x="${tx}" y="${ty}"
+                          fill="${sector.type === "bankrupt" ? "#ffffff" : "#020617"}"
+                          font-weight="900"
+                          font-size="11"
+                          text-anchor="middle"
+                          transform="rotate(${midAngle + 90}, ${tx}, ${ty})"
+                          class="select-none title-font">
+                        ${sector.label}
+                    </text>
+                `;
+            });
+
+            wheelSvg.innerHTML = wheelContent;
+        }
+
+        // CARGAR UN PANEL DE JUEGO
+        function loadPanel(index) {
+            state.currentPanelIndex = index;
+            const currentPanel = PANELS_DATA[index];
+            
+            currentPanelNumber.textContent = index + 1;
+            panelCategory.textContent = currentPanel.category;
+            
+            state.currentBank = 0;
+            state.usedLetters = [];
+            state.hasSpunThisTurn = false;
+            state.currentWheelSelection = null;
+            
+            updateScoreboards();
+            buildBoard(currentPanel.phrase);
+            buildKeyboard();
+            
+            gameStatusMessage.textContent = "Gira la ruleta en el botón inferior para empezar.";
+            modalLastSpin.textContent = "-";
+            modalLastSpin.style.color = "#ffffff";
+        }
+
+        // GENERACIÓN DEL TABLERO EN CASILLAS COMPACTAS
+        function buildBoard(phrase) {
+            boardRowsContainer.innerHTML = "";
+            
+            const words = phrase.toUpperCase().split(" ");
+            let rows = [[]];
+            let currentRow = 0;
+            const maxColsPerRow = 12;
+
+            words.forEach(word => {
+                const wordLength = word.length;
+                const currentRowLength = rows[currentRow].reduce((acc, w) => acc + w.length + 1, 0) + wordLength;
+                
+                if (currentRowLength <= maxColsPerRow) {
+                    rows[currentRow].push(word);
+                } else {
+                    currentRow++;
+                    rows[currentRow] = [word];
+                }
+            });
+
+            state.totalBoardLettersToReveal = 0;
+            state.boardLettersRevealed = 0;
+
+            rows.forEach(rowWords => {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = "flex gap-0.5 md:gap-1 justify-center w-full";
+                
+                const fullRowString = rowWords.join(" ");
+                const sidePadding = Math.floor((maxColsPerRow - fullRowString.length) / 2);
+
+                for(let i = 0; i < sidePadding; i++) {
+                    rowDiv.appendChild(createEmptyCell());
+                }
+
+                for(let i = 0; i < fullRowString.length; i++) {
+                    const char = fullRowString[i];
+                    if (char === " ") {
+                        rowDiv.appendChild(createEmptyCell());
+                    } else if (/[A-ZÁÉÍÓÚÑ]/.test(char)) {
+                        state.totalBoardLettersToReveal++;
+                        rowDiv.appendChild(createLetterCell(char));
+                    }
+                }
+
+                const currentCellsCount = sidePadding + fullRowString.length;
+                for(let i = currentCellsCount; i < maxColsPerRow; i++) {
+                    rowDiv.appendChild(createEmptyCell());
+                }
+
+                boardRowsContainer.appendChild(rowDiv);
+            });
+        }
+
+        function createEmptyCell() {
+            const cell = document.createElement('div');
+            cell.className = "w-6 h-8 sm:w-8 sm:h-10 bg-slate-900 border border-slate-800 rounded";
+            return cell;
+        }
+
+        function createLetterCell(letter) {
+            const container = document.createElement('div');
+            container.className = "tile-3d w-6 h-8 sm:w-8 sm:h-10";
+            container.dataset.letter = letter;
+
+            const inner = document.createElement('div');
+            inner.className = "tile-inner w-full h-full";
+
+            const front = document.createElement('div');
+            front.className = "tile-front text-transparent";
+            front.textContent = "?";
+
+            const back = document.createElement('div');
+            back.className = "tile-back text-[11px] sm:text-xs font-black";
+            back.textContent = letter;
+
+            inner.appendChild(front);
+            inner.appendChild(back);
+            container.appendChild(inner);
+
+            return container;
+        }
+
+        // TECLADO VIRTUAL DE CONCURSO
+        function buildKeyboard() {
+            const consonants = "BCDFGHJKLMNÑPQRSTVWXYZ";
+            const vowels = "AEIOU";
+
+            // Limpiar completamente
+            keyboardConsonants.innerHTML = "";
+            keyboardVowels.innerHTML = "";
+
+            for (let char of consonants) {
+                const btn = document.createElement('button');
+                btn.textContent = char;
+                btn.className = "bg-blue-950/40 border border-blue-900/30 text-blue-300 font-extrabold py-2.5 rounded-lg text-xs cursor-not-allowed opacity-50";
+                btn.dataset.letter = char;
+                btn.dataset.keyboard = "game"; // Marcar que es del teclado game
+                btn.disabled = true;
+
+                // Usar función nombrada para poder removerla después si es necesario
+                const handler = (e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    chooseLetter(char, false);
+                };
+                btn.addEventListener('click', handler, false);
+                keyboardConsonants.appendChild(btn);
+            }
+
+            for (let char of vowels) {
+                const btn = document.createElement('button');
+                btn.textContent = char;
+                btn.className = "bg-amber-950/40 border border-amber-900/30 text-amber-300 font-extrabold py-2.5 rounded-lg text-xs cursor-not-allowed opacity-50";
+                btn.dataset.letter = char;
+                btn.dataset.keyboard = "game"; // Marcar que es del teclado game
+                btn.disabled = true;
+
+                const handler = (e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                    chooseLetter(char, true);
+                };
+                btn.addEventListener('click', handler, false);
+                keyboardVowels.appendChild(btn);
+            }
+        }
+
+        function setConsonantsEnabled(enabled) {
+            const buttons = keyboardConsonants.querySelectorAll('button');
+            buttons.forEach(btn => {
+                const letter = btn.dataset.letter;
+                if (!state.usedLetters.includes(letter)) {
+                    btn.disabled = !enabled;
+                    if (enabled) {
+                        btn.className = "bg-blue-600 border border-blue-400 text-white font-extrabold py-2.5 rounded-lg text-xs active:scale-95 duration-75";
+                    } else {
+                        btn.className = "bg-blue-950/40 border border-blue-900/30 text-blue-300 font-extrabold py-2.5 rounded-lg text-xs opacity-50 cursor-not-allowed";
+                    }
+                }
+            });
+        }
+
+        function setVocalesEnabled(enabled) {
+            const buttons = keyboardVowels.querySelectorAll('button');
+            buttons.forEach(btn => {
+                const letter = btn.dataset.letter;
+                if (!state.usedLetters.includes(letter)) {
+                    btn.disabled = !enabled;
+                    if (enabled) {
+                        btn.className = "bg-amber-500 border border-amber-300 text-slate-950 font-extrabold py-2.5 rounded-lg text-xs active:scale-95 duration-75";
+                    } else {
+                        btn.className = "bg-amber-950/40 border border-amber-900/30 text-amber-300 font-extrabold py-2.5 rounded-lg text-xs opacity-50 cursor-not-allowed";
+                    }
+                }
+            });
+        }
+
+        function updateScoreboards() {
+            displayCurrentBank.textContent = `${state.currentBank} Pts`;
+            displayTotalBank.textContent = `${state.totalBank} Pts`;
+            displayWildcards.textContent = `🎟️ x${state.wildcards}`;
+            
+            if (state.wildcards > 0) {
+                wildcardIndicator.classList.remove('hidden');
+            } else {
+                wildcardIndicator.classList.add('hidden');
+            }
+        }
+
+        function showGameAlert(emoji, text) {
+            alertEmoji.textContent = emoji;
+            alertText.textContent = text;
+            modalAlert.classList.remove('hidden');
+            setTimeout(() => {
+                modalAlert.classList.add('hidden');
+            }, 2200);
+        }
+
+        // GIRAR LA RULETA (EN MODAL)
+        let currentRotation = 0;
+        btnSpin.addEventListener('click', () => {
+            if (state.hasSpunThisTurn) return;
+
+            btnSpin.disabled = true;
+            btnSpin.classList.add('opacity-50');
+
+            const totalSectors = WHEEL_SECTOR_VALS.length;
+            const chosenIndex = Math.floor(Math.random() * totalSectors);
+            const sector = WHEEL_SECTOR_VALS[chosenIndex];
+            
+            let spinInterval = setInterval(() => playSound('spin'), 140);
+            setTimeout(() => clearInterval(spinInterval), 3000);
+
+            const sectorAngle = 360 / totalSectors;
+            const targetAngle = 360 - (chosenIndex * sectorAngle) - (sectorAngle / 2);
+            const extraSpins = 3 + Math.floor(Math.random() * 2);
+            currentRotation = (extraSpins * 360) + targetAngle;
+
+            wheelSvg.style.transform = `rotate(${currentRotation}deg)`;
+
+            setTimeout(() => {
+                state.hasSpunThisTurn = true;
+                state.currentWheelSelection = sector;
+                
+                modalLastSpin.textContent = sector.label;
+                modalLastSpin.style.color = sector.color;
+
+                resolveWheelLanding(sector);
+            }, 4000);
+        });
+
+        // RESOLVER RESULTADO DE LA RULETA
+        function resolveWheelLanding(sector) {
+            // Cerrar ruleta automáticamente si se puede elegir letra
+            const closeWheelAfterDelay = () => {
+                setTimeout(() => {
+                    wheelModal.classList.add('hidden');
+                    btnBackToBoard.classList.add('hidden');
+                }, 800);
+            };
+
+            // Manejo por tipo de gajo
+            if (sector.type === "bankrupt") {
+                playSound('bankruptcy');
+                if (state.wildcards > 0) {
+                    state.wildcards--;
+                    updateScoreboards();
+                    showGameAlert("🎫", "¡La Quiebra se lleva tu Comodín! Pero salvas tus puntos.");
+                } else {
+                    state.currentBank = 0;
+                    updateScoreboards();
+                    showGameAlert("💥", "¡QUIEBRA! Marcador a cero puntos.");
+                }
+                state.hasSpunThisTurn = false;
+                state.currentWheelSelection = null;
+                gameStatusMessage.textContent = "Gira de nuevo la ruleta.";
+                closeWheelAfterDelay();
+
+            } else if (sector.type === "vowel") {
+                playSound('success');
+                showGameAlert("🎙️", "Elige una vocal del tablero. 📍");
+                gameStatusMessage.textContent = "Elige una vocal para descubrir.";
+                setVocalesEnabled(true);
+                setConsonantsEnabled(false);
+
+                state.currentWheelSelection = sector;
+                closeWheelAfterDelay();
+
+            } else if (sector.type === "wildcard") {
+                playSound('success');
+                state.wildcards++;
+                updateScoreboards();
+                showGameAlert("🎟️", "¡COMODÍN! Ahora elige una consonante. 📍");
+                gameStatusMessage.textContent = "Puedes elegir una consonante por 150 Pts.";
+
+                state.currentWheelSelection = { label: "COMODIN", value: 150, color: "#10b981" };
+                setConsonantsEnabled(true);
+                evaluateVowelsAvailability();
+                closeWheelAfterDelay();
+
+            } else if (sector.type === "points") {
+                playSound('success');
+                showGameAlert("🎯", `¡Juegas por ${sector.label}! Elige consonante. 📍`);
+                gameStatusMessage.textContent = `Consonante correcta te dará ${sector.label}.`;
+                state.currentWheelSelection = sector;
+                setConsonantsEnabled(true);
+                evaluateVowelsAvailability();
+                closeWheelAfterDelay();
+
+            } else if (sector.type === "vowel_consonant") {
+                playSound('success');
+                showGameAlert("🎯", `¡Doble premio! Elige vocal y consonante. 📍`);
+                gameStatusMessage.textContent = `Puedes elegir 1 vocal y 1 consonante.`;
+                state.currentWheelSelection = sector;
+                setConsonantsEnabled(true);
+                setVocalesEnabled(true);
+                closeWheelAfterDelay();
+            }
+        }
+
+        function evaluateVowelsAvailability() {
+            if (state.currentBank >= 200) {
+                setVocalesEnabled(true);
+                btnBuyVowel.classList.remove('hidden');
+            } else {
+                setVocalesEnabled(false);
+                btnBuyVowel.classList.add('hidden');
+            }
+        }
+
+        // LÓGICA DE JUGAR UNA LETRA - SIMPLE Y DIRECTO
+        function chooseLetter(letter, isVowel) {
+            if (state.usedLetters.includes(letter)) return;
+            state.usedLetters.push(letter);
+
+            // Deshabilitar botón
+            document.querySelectorAll(`button[data-letter="${letter}"]`).forEach(btn => {
+                btn.disabled = true;
+                btn.className = "bg-slate-800 text-slate-600 font-extrabold py-2.5 rounded-lg text-xs cursor-not-allowed";
+            });
+
+            // Si es vocal, restar 200
+            if (isVowel) {
+                state.currentBank = Math.max(0, state.currentBank - 200);
+                updateScoreboards();
+                showGameAlert("✨", `Vocal "${letter}" elegida.`);
+                state.hasSpunThisTurn = false;
+                state.currentWheelSelection = null;
+                return;
+            }
+
+            // Contar coincidencias (solo para consonantes)
+            let matches = 0;
+            const cleanLetter = removeAccents(letter);
+            boardRowsContainer.querySelectorAll('[data-letter]').forEach(cell => {
+                if (removeAccents(cell.dataset.letter) === cleanLetter) {
+                    matches++;
+                }
+            });
+
+            // Revelar con animación
+            let count = 0;
+            boardRowsContainer.querySelectorAll('[data-letter]').forEach(cell => {
+                if (removeAccents(cell.dataset.letter) === cleanLetter) {
+                    count++;
+                    setTimeout(() => cell.classList.add('tile-revealed'), count * 150);
+                    state.boardLettersRevealed++;
+                }
+            });
+
+            // Sumar puntos UNA SOLA VEZ
+            if (matches > 0 && state.currentWheelSelection && state.currentWheelSelection.value) {
+                const pts = parseInt(state.currentWheelSelection.value) * matches;
+                state.currentBank += pts;
+                playSound('success');
+                showGameAlert("✨", `+${pts} Pts por "${letter}"`);
+            } else if (matches === 0) {
+                playSound('error');
+                showGameAlert("❌", `"${letter}" no está.`);
+            } else {
+                playSound('success');
+                showGameAlert("✨", `"${letter}" encontrada.`);
+            }
+
+            state.hasSpunThisTurn = false;
+            state.currentWheelSelection = null;
+            setConsonantsEnabled(false);
+            evaluateVowelsAvailability();
+            updateScoreboards();
+
+            if (state.boardLettersRevealed >= state.totalBoardLettersToReveal) {
+                setTimeout(() => congratulateWinner(true), 500);
+            }
+        }
+
+        function removeAccents(str) {
+            return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+        }
+
+        // ABRIR EL MODAL PARA RESOLVER
+        btnSolve.addEventListener('click', () => {
+            const currentPanel = PANELS_DATA[state.currentPanelIndex];
+            solveCategoryHint.textContent = currentPanel.category;
+            solveInput.value = "";
+            modalSolve.classList.remove('hidden');
+        });
+
+        btnCancelSolve.addEventListener('click', () => {
+            modalSolve.classList.add('hidden');
+        });
+
+        btnSubmitSolve.addEventListener('click', () => {
+            const currentPanel = PANELS_DATA[state.currentPanelIndex];
+            const answerUser = removeAccents(solveInput.value.trim().toUpperCase());
+            const answerCorrect = removeAccents(currentPanel.phrase.toUpperCase());
+
+            const cleanUser = answerUser.replace(/\s+/g, ' ');
+            const cleanCorrect = answerCorrect.replace(/\s+/g, ' ');
+
+            modalSolve.classList.add('hidden');
+
+            if (cleanUser === cleanCorrect) {
+                const cells = boardRowsContainer.querySelectorAll('.tile-3d');
+                cells.forEach(cell => cell.classList.add('tile-revealed'));
+                congratulateWinner(false);
+            } else {
+                playSound('error');
+                showGameAlert("❌", "¡Solución incorrecta! Sigue investigando letras.");
+            }
+        });
+
+        // CONGRATULAR AL GANADOR
+        function congratulateWinner(automatically) {
+            playSound('win');
+
+            // Asegurar que currentBank sea positivo
+            if (state.currentBank < 0) {
+                state.currentBank = 0;
+            }
+
+            if (state.currentBank === 0) {
+                state.currentBank = 100;
+            }
+
+            // Sumar bonus de finalización si existe
+            const currentPanel = PANELS_DATA[state.currentPanelIndex];
+            if (currentPanel && currentPanel.completionBonus) {
+                state.currentBank += currentPanel.completionBonus;
+            }
+
+            // Validar que sea número válido antes de sumar
+            const panelPoints = Math.max(0, Math.floor(state.currentBank));
+            state.totalBank += panelPoints;
+            state.totalBank = Math.max(0, state.totalBank); // No permitir negativos
+
+            updateScoreboards();
+
+            resultPanelPoints.textContent = `${panelPoints} Pts`;
+            resultTotalPoints.textContent = `${state.totalBank} Pts`;
+
+            if (automatically) {
+                resultTitle.textContent = "¡Panel Completado!";
+                resultMessage.textContent = "Has destapado todas las letras del tablero.";
+            } else {
+                resultTitle.textContent = "¡Correcto!";
+                resultMessage.textContent = "¡Has resuelto el panel con éxito!";
+            }
+
+            if (state.currentPanelIndex + 1 >= PANELS_DATA.length) {
+                btnNextPanel.textContent = "¡Ver Podio Final! 🎉";
+            } else {
+                btnNextPanel.textContent = "Siguiente Panel ➔";
+            }
+
+            modalResult.classList.remove('hidden');
+        }
+
+        btnNextPanel.addEventListener('click', () => {
+            modalResult.classList.add('hidden');
+            const nextIndex = state.currentPanelIndex + 1;
+
+            if (nextIndex < PANELS_DATA.length) {
+                loadPanel(nextIndex);
+            } else {
+                // Ir a la tienda después del panel 5
+                showShop();
+            }
+        });
+
+        // ============================================
+        // TIENDA DE AYUDAS
+        // ============================================
+        function showShop() {
+            gameHeader.classList.add('hidden');
+            screenGame.classList.add('hidden');
+            screenShop.classList.remove('hidden');
+            state.gamePhase = "shop";
+
+            shopTotalPoints.textContent = `${state.totalBank} Pts`;
+            shopItemsContainer.innerHTML = "";
+
+            gameConfig.shopItems.forEach(item => {
+                const canBuy = state.totalBank >= item.cost && (item.quantity > 0 || item.quantity === undefined);
+                const bought = state.boughtItems[item.id] || 0;
+
+                const itemDiv = document.createElement('div');
+                itemDiv.className = `bg-slate-900/60 border border-slate-800 rounded-xl p-3 flex justify-between items-center ${!canBuy ? 'opacity-50' : ''}`;
+
+                const leftDiv = document.createElement('div');
+                leftDiv.innerHTML = `
+                    <p class="text-sm font-bold text-white">${item.label}</p>
+                    <p class="text-xs text-slate-400">Costo: ${item.cost} Pts</p>
+                `;
+
+                const btnBuy = document.createElement('button');
+                btnBuy.className = canBuy ? "bg-emerald-600 hover:bg-emerald-500 text-white font-black text-sm py-2 px-4 rounded-lg" : "bg-slate-700 text-slate-500 font-black text-sm py-2 px-4 rounded-lg cursor-not-allowed";
+                btnBuy.textContent = `Comprar${bought > 0 ? ` (x${bought})` : ''}`;
+                btnBuy.disabled = !canBuy;
+
+                btnBuy.addEventListener('click', () => buyShopItem(item));
+
+                itemDiv.appendChild(leftDiv);
+                itemDiv.appendChild(btnBuy);
+                shopItemsContainer.appendChild(itemDiv);
+            });
+        }
+
+        function buyShopItem(item) {
+            if (state.totalBank < item.cost) {
+                showGameAlert("💰", "No tienes suficientes puntos.");
+                return;
+            }
+
+            state.totalBank -= item.cost;
+
+            if (item.type === "single_vowel") {
+                state.boughtItems.vowels = (state.boughtItems.vowels || 0) + 1;
+            } else if (item.type === "single_consonant") {
+                state.boughtItems.consonants = (state.boughtItems.consonants || 0) + 1;
+            } else if (item.type === "all_vowels") {
+                state.boughtItems.allVowels = true;
+            } else if (item.type === "hint") {
+                state.boughtItems.hints = (state.boughtItems.hints || 0) + 1;
+            } else if (item.type === "final_wildcard") {
+                state.boughtItems.finalWildcard = true;
+            }
+
+            shopTotalPoints.textContent = `${state.totalBank} Pts`;
+            showGameAlert("✨", `¡Comprado! ${item.label}`);
+            showShop();
+        }
+
+        btnGoFinal.addEventListener('click', () => {
+            screenShop.classList.add('hidden');
+            loadFinalPanel();
+        });
+
+        // ============================================
+        // PANEL FINAL
+        // ============================================
+        function loadFinalPanel() {
+            screenShop.classList.add('hidden');
+            gameHeader.classList.remove('hidden');
+            screenFinal.classList.remove('hidden');
+            state.gamePhase = "final";
+
+            currentPanelNumber.textContent = "🏆";
+            totalPanels.textContent = "FINAL";
+
+            const finalPanel = gameConfig.finalPanel;
+            finalCategory.textContent = finalPanel.category;
+
+            state.currentPanelIndex = PANELS_DATA.length; // Indicador especial
+            state.currentBank = 0;
+            state.usedLetters = [];
+            state.appliedVowels = [];
+            state.appliedConsonants = [];
+
+            buildFinalBoard(finalPanel.phrase);
+            buildFinalHelps();
+
+            updateScoreboards();
+        }
+
+        function buildFinalBoard(phrase) {
+            finalBoardContainer.innerHTML = "";
+
+            const words = phrase.toUpperCase().split(" ");
+            let rows = [[]];
+            let currentRow = 0;
+            const maxColsPerRow = 12;
+
+            words.forEach(word => {
+                const wordLength = word.length;
+                const currentRowLength = rows[currentRow].reduce((acc, w) => acc + w.length + 1, 0) + wordLength;
+
+                if (currentRowLength <= maxColsPerRow) {
+                    rows[currentRow].push(word);
+                } else {
+                    currentRow++;
+                    rows[currentRow] = [word];
+                }
+            });
+
+            state.totalBoardLettersToReveal = 0;
+            state.boardLettersRevealed = 0;
+
+            rows.forEach(rowWords => {
+                const rowDiv = document.createElement('div');
+                rowDiv.className = "flex gap-0.5 md:gap-1 justify-center w-full";
+
+                const fullRowString = rowWords.join(" ");
+                const sidePadding = Math.floor((maxColsPerRow - fullRowString.length) / 2);
+
+                for(let i = 0; i < sidePadding; i++) {
+                    rowDiv.appendChild(createEmptyCell());
+                }
+
+                for(let i = 0; i < fullRowString.length; i++) {
+                    const char = fullRowString[i];
+                    if (char === " ") {
+                        rowDiv.appendChild(createEmptyCell());
+                    } else if (/[A-ZÁÉÍÓÚÑ]/.test(char)) {
+                        state.totalBoardLettersToReveal++;
+                        const cellEl = createLetterCell(char);
+
+                        // Revelar si está en las letras iniciales
+                        if (gameConfig.finalPanel.initialRevealLetters.includes(char)) {
+                            cellEl.classList.add('tile-revealed');
+                            state.boardLettersRevealed++;
+                        }
+
+                        rowDiv.appendChild(cellEl);
+                    }
+                }
+
+                const currentCellsCount = sidePadding + fullRowString.length;
+                for(let i = currentCellsCount; i < maxColsPerRow; i++) {
+                    rowDiv.appendChild(createEmptyCell());
+                }
+
+                finalBoardContainer.appendChild(rowDiv);
+            });
+        }
+
+        function buildFinalHelps() {
+            finalHelpsContainer.innerHTML = "";
+            finalKeyboardContainer.innerHTML = "";
+
+            const helps = [];
+
+            if (state.boughtItems.vowels > 0) {
+                helps.push({
+                    label: `Vocal (+${state.boughtItems.vowels})`,
+                    type: "vowel",
+                    id: "vowel"
+                });
+            }
+            if (state.boughtItems.consonants > 0) {
+                helps.push({
+                    label: `Consonante (+${state.boughtItems.consonants})`,
+                    type: "consonant",
+                    id: "consonant"
+                });
+            }
+            if (state.boughtItems.allVowels) {
+                helps.push({
+                    label: "Revelar todas las Vocales",
+                    type: "all_vowels",
+                    id: "all_vowels"
+                });
+            }
+            if (state.boughtItems.hints > 0) {
+                helps.push({
+                    label: `Pista Extra`,
+                    type: "hint",
+                    id: "hint"
+                });
+            }
+            if (state.boughtItems.finalWildcard) {
+                helps.push({
+                    label: "Comodín Final",
+                    type: "wildcard",
+                    id: "wildcard"
+                });
+            }
+
+            if (helps.length === 0) {
+                finalHelpsContainer.innerHTML = '<p class="text-xs text-slate-400">No compraste ayudas. ¡Deberás resolver solo!</p>';
+            } else {
+                helps.forEach(help => {
+                    const btn = document.createElement('button');
+                    btn.className = "w-full bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm py-2 px-3 rounded-lg transition-transform active:scale-95";
+                    btn.textContent = `✨ ${help.label}`;
+                    btn.addEventListener('click', () => applyFinalHelp(help));
+                    finalHelpsContainer.appendChild(btn);
+                });
+            }
+
+            // Teclado para elegir letras manualmente
+            const consonants = "BCDFGHJKLMNÑPQRSTVWXYZ";
+            const vowels = "AEIOU";
+            const keyboardDiv = document.createElement('div');
+            keyboardDiv.className = "space-y-2";
+
+            const consonantDiv = document.createElement('div');
+            consonantDiv.className = "grid grid-cols-7 gap-1";
+            for (let char of consonants) {
+                const btn = document.createElement('button');
+                btn.textContent = char;
+                btn.className = "bg-blue-600 hover:bg-blue-500 text-white font-extrabold py-1.5 rounded text-xs active:scale-95";
+                btn.addEventListener('click', () => chooseFinalLetter(char, false));
+                consonantDiv.appendChild(btn);
+            }
+
+            const vowelDiv = document.createElement('div');
+            vowelDiv.className = "grid grid-cols-5 gap-1 pt-2 border-t border-slate-800";
+            for (let char of vowels) {
+                const btn = document.createElement('button');
+                btn.textContent = char;
+                btn.className = "bg-amber-600 hover:bg-amber-500 text-white font-extrabold py-1.5 rounded text-xs active:scale-95";
+                btn.addEventListener('click', () => chooseFinalLetter(char, true));
+                vowelDiv.appendChild(btn);
+            }
+
+            keyboardDiv.appendChild(consonantDiv);
+            keyboardDiv.appendChild(vowelDiv);
+            finalKeyboardContainer.appendChild(keyboardDiv);
+        }
+
+        function applyFinalHelp(help) {
+            const finalPanel = gameConfig.finalPanel;
+            const phrase = finalPanel.phrase.toUpperCase();
+
+            if (help.type === "vowel") {
+                const availableVowels = "AEIOU".split('').filter(v => !state.appliedVowels.includes(v));
+                if (availableVowels.length > 0) {
+                    const vowel = availableVowels[0];
+                    revealFinalLetter(vowel);
+                    state.appliedVowels.push(vowel);
+                    state.boughtItems.vowels--;
+                }
+            } else if (help.type === "consonant") {
+                const availableConsonants = "BCDFGHJKLMNÑPQRSTVWXYZ".split('').filter(c => !state.appliedConsonants.includes(c));
+                if (availableConsonants.length > 0) {
+                    const consonant = availableConsonants[0];
+                    revealFinalLetter(consonant);
+                    state.appliedConsonants.push(consonant);
+                    state.boughtItems.consonants--;
+                }
+            } else if (help.type === "all_vowels") {
+                for (let vowel of "AEIOU") {
+                    revealFinalLetter(vowel);
+                }
+                state.boughtItems.allVowels = false;
+            }
+
+            buildFinalHelps();
+        }
+
+        function revealFinalLetter(letter) {
+            const cells = finalBoardContainer.querySelectorAll('[data-letter]');
+            cells.forEach(cell => {
+                if (removeAccents(cell.dataset.letter) === removeAccents(letter)) {
+                    if (!cell.classList.contains('tile-revealed')) {
+                        cell.classList.add('tile-revealed');
+                        state.boardLettersRevealed++;
+                    }
+                }
+            });
+        }
+
+        function chooseFinalLetter(letter, isVowel) {
+            if (state.usedLetters.includes(letter)) {
+                showGameAlert("❌", "Ya usaste esa letra.");
+                return;
+            }
+
+            state.usedLetters.push(letter);
+            revealFinalLetter(letter);
+
+            if (state.boardLettersRevealed >= state.totalBoardLettersToReveal) {
+                showGameAlert("✨", "¡Panel completado!");
+            }
+        }
+
+        btnSolveFinal.addEventListener('click', () => {
+            const finalPanel = gameConfig.finalPanel;
+            solveCategoryHint.textContent = finalPanel.category;
+            solveInput.value = "";
+            modalSolve.classList.remove('hidden');
+
+            // Cambiar el comportamiento del botón submit para final
+            btnSubmitSolve.onclick = () => {
+                const answerUser = removeAccents(solveInput.value.trim().toUpperCase());
+                const answerCorrect = removeAccents(finalPanel.phrase.toUpperCase());
+
+                modalSolve.classList.add('hidden');
+
+                const cleanUser = answerUser.replace(/\s+/g, ' ');
+                const cleanCorrect = answerCorrect.replace(/\s+/g, ' ');
+
+                if (cleanUser === cleanCorrect) {
+                    playSound('win');
+                    screenFinal.classList.add('hidden');
+                    gameHeader.classList.add('hidden');
+                    screenVictory.classList.remove('hidden');
+
+                    victoryGiftText.textContent = finalPanel.finalGiftText;
+                    victoryTotalPoints.textContent = `${state.totalBank} Pts`;
+                } else {
+                    playSound('error');
+                    showGameAlert("❌", "¡Solución incorrecta!");
+                }
+            };
+        });
+
+        btnPlayAgain.addEventListener('click', () => {
+            location.reload();
+        });
+
+        // VICTORIA FINAL
+        function showFinalVictoryScreen() {
+            gameHeader.classList.add('hidden');
+            screenGame.classList.add('hidden');
+            screenWelcome.classList.remove('hidden');
+            
+            const welcomeTitle = screenWelcome.querySelector('h2');
+            const welcomeDescription = screenWelcome.querySelector('p');
+            const welcomeCard = screenWelcome.querySelector('.bg-slate-950\/60');
+            
+            welcomeTitle.textContent = "¡Victoria Final!";
+            welcomeTitle.className = "text-3xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-yellow-400 via-amber-300 to-emerald-400 title-font leading-tight py-1";
+            
+            welcomeDescription.innerHTML = `
+                ¡Magnífico juego, <span class="text-white font-bold">${state.playerName}</span>!<br>
+                Has resuelto con éxito los 5 paneles de la edición.<br>
+                Tu marcador total acumulado definitivo es:
+            `;
+
+            welcomeCard.innerHTML = `
+                <div class="w-full text-center py-1">
+                    <div class="text-[9px] text-slate-400 font-bold uppercase tracking-widest">Puntuación de Oro</div>
+                    <div class="text-4xl font-black text-yellow-400 title-font mt-1 animate-pulse">${state.totalBank} Pts</div>
+                    <div class="text-[9px] text-emerald-400 uppercase tracking-widest mt-1 font-bold">¡Has completado el juego! 🏆</div>
+                </div>
+            `;
+
+            btnStartGame.textContent = "🔄 Volver a jugar";
+            btnStartGame.onclick = () => {
+                location.reload();
+            };
+        }
+    </script>
+</body>
+</html>
