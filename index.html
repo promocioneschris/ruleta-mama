@@ -81,7 +81,7 @@
         .wheel-svg {
             width: 100%;
             height: 100%;
-            transition: transform 4s cubic-bezier(0.1, 0.8, 0.1, 1);
+            transition: transform 2s cubic-bezier(0.1, 0.8, 0.1, 1);
         }
         /* Centrar la flecha indicadora */
         .pointer {
@@ -322,9 +322,21 @@
                     <p class="text-lg md:text-2xl text-yellow-300 font-black">🎊 ¡LO LOGRASTE! 🎊</p>
                 </div>
 
-                <button id="btn-see-message" class="w-full max-w-sm bg-gradient-to-r from-pink-500 to-purple-600 hover:from-pink-400 hover:to-purple-500 text-white font-black text-xl py-5 px-8 rounded-xl shadow-lg transition-transform active:scale-95 duration-150">
-                    💌 Tienes un Mensaje Especial
-                </button>
+                <!-- Gift Box -->
+                <div id="gift-box" class="cursor-pointer mt-4">
+                    <div class="text-6xl md:text-7xl hover:scale-110 transition-transform duration-300">🎁</div>
+                    <p class="text-sm md:text-base text-slate-300 mt-2">Toca para abrir tu regalo</p>
+                </div>
+
+                <!-- Hidden image modal -->
+                <div id="gift-modal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
+                    <div class="max-w-2xl w-full">
+                        <img src="regalo-mama.PNG" alt="Tu regalo" class="w-full rounded-xl shadow-2xl">
+                        <button id="btn-close-gift" class="w-full mt-4 bg-gradient-to-r from-pink-500 to-purple-600 text-white font-black py-3 px-4 rounded-xl">
+                            Cerrar
+                        </button>
+                    </div>
+                </div>
             </section>
 
             <!-- 6. PANTALLA DE VICTORIA FINAL -->
@@ -2016,11 +2028,22 @@
             launchParty();
         }
 
-        document.getElementById('btn-see-message').addEventListener('click', () => {
-            // Aquí irá la pantalla de mensaje personalizado
-            // Por ahora, solo recargamos
-            showGameAlert("✨", "¡Mensaje personalizado próximamente!");
-        });
+        // Gift box event listeners
+        const giftBox = document.getElementById('gift-box');
+        const giftModal = document.getElementById('gift-modal');
+        const btnCloseGift = document.getElementById('btn-close-gift');
+
+        if (giftBox) {
+            giftBox.addEventListener('click', () => {
+                giftModal.classList.remove('hidden');
+            });
+        }
+
+        if (btnCloseGift) {
+            btnCloseGift.addEventListener('click', () => {
+                giftModal.classList.add('hidden');
+            });
+        }
 
         btnPlayAgain.addEventListener('click', () => {
             location.reload();
