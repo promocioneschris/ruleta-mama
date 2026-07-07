@@ -1301,7 +1301,7 @@
 
             const sectorAngle = 360 / totalSectors;
             const targetAngle = 360 - (chosenIndex * sectorAngle) - (sectorAngle / 2);
-            const extraSpins = 3 + Math.floor(Math.random() * 2);
+            const extraSpins = 6 + Math.floor(Math.random() * 3);
             currentRotation = (extraSpins * 360) + targetAngle;
 
             wheelSvg.style.transform = `rotate(${currentRotation}deg)`;
@@ -1387,12 +1387,14 @@
         }
 
         function evaluateVowelsAvailability() {
-            // Solo mostrar botón de comprar vocal, NO habilitar vocales
-            if (state.currentBank >= 200) {
+            // Mostrar botón si tienes puntos, pero NO habilitar vocales
+            if (state.currentBank >= 200 && !state.hasSpunThisTurn) {
                 btnBuyVowel.classList.remove('hidden');
             } else {
                 btnBuyVowel.classList.add('hidden');
-                // Si no tienes puntos, deshabilita vocales
+            }
+            // Deshabilitar vocales después de usarlas
+            if (!state.currentWheelSelection || state.currentWheelSelection.type !== "vowel") {
                 setVocalesEnabled(false);
             }
         }
